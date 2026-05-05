@@ -77,6 +77,7 @@ Go to the latest GitHub Release for this repository and download the binary for 
 |---|---|
 | Linux (x86-64) | `run_tests-linux-x86_64` |
 | Linux (ARM64, e.g. Raspberry Pi) | `run_tests-linux-arm64` |
+| macOS (Intel) | `run_tests-macos-x86_64` |
 | macOS (Apple Silicon) | `run_tests-macos-arm64` |
 | Windows (x86-64) | `run_tests-windows-x86_64.exe` |
 
@@ -86,19 +87,19 @@ You do **not** need Python installed — the binary is self-contained.
 
 ## Run the tester
 
+Place the downloaded binary inside your project's `tests/binaries/<platform>/` folder
+and name it `run_tests` (or `run_tests.exe` on Windows). Then run:
+
 ### macOS / Linux
 
 ```bash
-# Make the binary executable (only needed once)
-chmod +x run_tests-<platform>
-
 # Phase 1 only (fixtures, no database needed)
 cd /path/to/your/project
-PROJECT_DIR=. /path/to/run_tests-<platform>
+python3 tests/run.py
 
 # Phase 1 + Phase 2 against your local MongoDB
 # (requires MongoDB running with the sample data loaded — see Prerequisites above)
-PROJECT_DIR=. DEBUG_DB=true /path/to/run_tests-<platform>
+DEBUG_DB=true python3 tests/run.py
 ```
 
 ### Windows (PowerShell)
@@ -107,14 +108,15 @@ PROJECT_DIR=. DEBUG_DB=true /path/to/run_tests-<platform>
 cd C:\path\to\your\project
 
 # Phase 1 only
-$env:PROJECT_DIR = "."
-.\run_tests-windows-x86_64.exe
+python tests\run.py
 
 # Phase 1 + Phase 2 against local MongoDB
-$env:PROJECT_DIR = "."
 $env:DEBUG_DB = "true"
-.\run_tests-windows-x86_64.exe
+python tests\run.py
 ```
+
+`run.py` automatically detects your project directory and injects the required
+MongoDB credentials — no environment variables need to be set manually.
 
 ---
 
