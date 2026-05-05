@@ -33,12 +33,24 @@ const router = express.Router();
 // earlier route. Test each endpoint before assuming it works, and reorder
 // the route definitions in this file so every endpoint is reachable.
 
+async function getTrailBatchWithCache() {
+  let batch = await fetchFromCache(ObjectType.trail);
+
+  if (!batch) {
+    console.log("Fetching data from MongoDB");
+    batch = await getLatestBatch(BatchType.TrailBatch);
+    await cacheResult(ObjectType.trail, batch);
+  }
+
+  return batch;
+}
+
 // GET /api/trails — latest batch
 router.get('/', async (req, res) => {
   try {
     // TODO: fetch the latest TrailBatch.
     // Look up cache → on miss, query MongoDB → write the result back to cache → return.
-    const batch = await getLatestBatch(BatchType.TrailBatch);
+    const batch = await getTrailBatchWithCache();
     res.json(batch);
   } catch (error) {
     console.error("Error in GET /api/trails:", error);
@@ -68,20 +80,6 @@ router.get('/at/:timestamp', async (req, res) => {
   }
 });
 
-// GET /api/trails/:name — specific trail
-router.get('/:name', async (req, res) => {
-  try {
-    // TODO: return the named trail from the latest batch.
-    // Look up cache → on miss, query MongoDB → write the result back to cache → return.
-    // If the trail does not exist, return 404 with { error: "Trail not found" }.
-    console.log("This endpoint is not yet implemented");
-    res.status(501).json({ error: "Not implemented" });
-  } catch (error) {
-    console.error("Error in GET /api/trails/:name:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
 // GET /api/trails/:name/:field — single field of a specific trail
 router.get('/:name/:field', async (req, res) => {
   try {
@@ -89,7 +87,7 @@ router.get('/:name/:field', async (req, res) => {
     // Look up cache → on miss, query MongoDB → write the result back to cache → return.
     // If the trail does not exist, return 404 with { error: "Trail not found" }.
     // If the field does not exist on the trail, return 404 with { error: "Field not found" }.
-    const batch = await getLatestBatch(BatchType.TrailBatch);
+    const batch = await getTrailBatchWithCache();
     const trail = batch.trails.find(trail => trail.name === req.params.name);
     const field = req.params.field;
 
@@ -103,6 +101,26 @@ router.get('/:name/:field', async (req, res) => {
     res.json({ [field]: trail[field] });
   } catch (error) {
     console.error("Error in GET /api/trails/:name/:field:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET /api/trails/:name — specific trail
+router.get('/:name', async (req, res) => {
+  try {
+    // TODO: return the named trail from the latest batch.
+    // Look up cache → on miss, query MongoDB → write the result back to cache → return.
+    // If the trail does not exist, return 404 with { error: "Trail not found" }.
+    const batch = await getTrailBatchWithCache();
+    const trail = batch.trails.find(trail => trail.name === req.params.name)
+    
+    if(!trail){
+      return res.status(404).json({error: "Trail not found"})
+    }
+
+    res.json(trail);
+  } catch (error) {
+    console.error("Error in GET /api/trails/:name:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -130,18 +148,23 @@ router.patch('/:name/status', async (req, res) => {
   try {
     const name = req.params.name;
     const { status } = req.body;
-    const batch = await getLatestBatch(BatchType.TrailBatch);
-    const trail = batch.trails.find(trail => trail.name === name);
-
-
     if (!Object.values(TrailStatus).includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
+
+    let batch = await fetchFromCache(ObjectType.trail);
+    if (!batch) {
+      console.log("Fetching data from MongoDB");
+      batch = await getLatestBatch(BatchType.TrailBatch);
+    }
+
+    const trail = batch.trails.find(trail => trail.name === name);
     if (!trail) {
       return res.status(404).json({ error: "Trail not found" });
     }
 
     trail.status = status;
+    await cacheResult(ObjectType.trail, batch)
     res.json(trail);
   } catch (error) {
     console.error("Error in PATCH /api/trails/:name/status:", error);

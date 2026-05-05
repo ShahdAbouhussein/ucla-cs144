@@ -33,12 +33,24 @@ const router = express.Router();
 // earlier route. Test each endpoint before assuming it works, and reorder
 // the route definitions in this file so every endpoint is reachable.
 
+async function getLiftBatchWithCache() {
+  let batch = await fetchFromCache(ObjectType.lift);
+
+  if (!batch) {
+    console.log("Fetching data from MongoDB");
+    batch = await getLatestBatch(BatchType.LiftBatch);
+    await cacheResult(ObjectType.lift, batch);
+  }
+
+  return batch;
+}
+
 // GET /api/lifts — latest batch
 router.get('/', async (req, res) => {
   try {
     // TODO: fetch the latest LiftBatch.
     // Look up cache → on miss, query MongoDB → write the result back to cache → return.
-    const batch = await getLatestBatch(BatchType.LiftBatch);
+    const batch = await getLiftBatchWithCache();
     res.json(batch);
   } catch (error) {
     console.error("Error in GET /api/lifts:", error);
@@ -67,26 +79,6 @@ router.get('/at/:timestamp', async (req, res) => {
   }
 });
 
-// GET /api/lifts/:name — specific lift
-router.get('/:name', async (req, res) => {
-  try {
-    // TODO: return the named lift from the latest batch.
-    // Look up cache → on miss, query MongoDB → write the result back to cache → return.
-    // If the lift does not exist, return 404 with { error: "Lift not found" }.
-    const batch = await getLatestBatch(BatchType.LiftBatch);
-    const lift = batch.lifts.find(lift => lift.name === req.params.name);
-    
-    if (!lift) {
-      return res.status(404).json({ error: "Lift not found" });
-    }
-    
-    res.json(lift);
-  } catch (error) {
-    console.error("Error in GET /api/lifts/:name:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
-
 // GET /api/lifts/:name/:field — single field of a specific lift
 router.get('/:name/:field', async (req, res) => {
   try {
@@ -94,7 +86,7 @@ router.get('/:name/:field', async (req, res) => {
     // Look up cache → on miss, query MongoDB → write the result back to cache → return.
     // If the lift does not exist, return 404 with { error: "Lift not found" }.
     // If the field does not exist on the lift, return 404 with { error: "Field not found" }.
-    const batch = await getLatestBatch(BatchType.LiftBatch);
+    const batch = await getLiftBatchWithCache();
     const lift = batch.lifts.find(lift => lift.name === req.params.name);
     const field = req.params.field;
 
@@ -112,6 +104,25 @@ router.get('/:name/:field', async (req, res) => {
   }
 });
 
+// GET /api/lifts/:name — specific lift
+router.get('/:name', async (req, res) => {
+  try {
+    // TODO: return the named lift from the latest batch.
+    // Look up cache → on miss, query MongoDB → write the result back to cache → return.
+    // If the lift does not exist, return 404 with { error: "Lift not found" }.
+    const batch = await getLiftBatchWithCache();
+    const lift = batch.lifts.find(lift => lift.name === req.params.name);
+    
+    if (!lift) {
+      return res.status(404).json({ error: "Lift not found" });
+    }
+    
+    res.json(lift);
+  } catch (error) {
+    console.error("Error in GET /api/lifts/:name:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 /*
  * TODO: Implement an endpoint to update the status of a specific lift.
@@ -135,18 +146,25 @@ router.patch('/:name/status', async (req, res) => {
   try {
     const name = req.params.name;
     const { status } = req.body;
-    const batch = await getLatestBatch(BatchType.LiftBatch);
-    const lift = batch.lifts.find(lift => lift.name === name);
-
     if (!Object.values(LiftStatus).includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
     }
+
+    let batch = await fetchFromCache(ObjectType.lift);
+    if (!batch) {
+      console.log("Fetching data from MongoDB");
+      batch = await getLatestBatch(BatchType.LiftBatch);
+    }
+
+    const lift = batch.lifts.find(lift => lift.name === name);
     if (!lift) {
       return res.status(404).json({ error: "Lift not found" });
     }
 
     lift.status = status;
     lift.lastUpdated = new Date().toISOString();
+    
+    await cacheResult(ObjectType.lift, batch);
     res.json(lift);
   } catch (error) {
     console.error("Error in PATCH /api/lifts/:name/status:", error);
