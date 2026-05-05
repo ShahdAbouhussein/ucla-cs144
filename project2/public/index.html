@@ -836,7 +836,15 @@ async function fetchAndRender() {
   try {
 
     // TODO: Fetch trail and lift data from your REST API using apiFetch.
+    const trailRawData = await apiFetch('/api/trails');
+    const liftRawData = await apiFetch('/api/lifts');
+    const trailBatch = await trailRawData.json();
+    const liftBatch = await liftRawData.json();
     
+    trailData = trailBatch.trails;
+    liftData = liftBatch.lifts;
+
+
     // Clear any filtered data
     filteredTrailData = [];
     filteredLiftData = [];
@@ -869,7 +877,12 @@ async function submitStatus() {
   const [type, name] = entity.split(':');
   try {
     // TODO: Call your update endpoint using apiFetch.
-    
+    const updateRawData = await apiFetch(`/api/${type}s/${name}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+    const update = await updateRawData.json();
     // Clear the form and local storage state
     document.getElementById('entitySelect').value = "";
     document.querySelectorAll('input[name="status"]').forEach(r => r.checked = false);
