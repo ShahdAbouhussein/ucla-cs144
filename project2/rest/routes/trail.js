@@ -38,10 +38,32 @@ router.get('/', async (req, res) => {
   try {
     // TODO: fetch the latest TrailBatch.
     // Look up cache → on miss, query MongoDB → write the result back to cache → return.
-    console.log("This endpoint is not yet implemented");
-    res.status(501).json({ error: "Not implemented" });
+    const batch = await getLatestBatch(BatchType.TrailBatch);
+    res.json(batch);
   } catch (error) {
     console.error("Error in GET /api/trails:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+// GET /api/trails/at/:timestamp — historical batch (NOT CACHED)
+router.get('/at/:timestamp', async (req, res) => {
+  try {
+    // TODO: return the most recent TrailBatch with timestamp <= :timestamp.
+    // Validate the timestamp format (e.g. 2025-05-01T14:25:00). Return 400 if invalid.
+    // If no batch exists at or before the given timestamp, return 404.
+    // DO NOT cache this endpoint.
+    const timestamp = req.params.timestamp;
+    const batch = await getNearestBatch(BatchType.TrailBatch, timestamp);
+
+    if (!batch) {
+      return res.status(404).json({ error: "No batch found" });
+    }
+
+    res.json(batch);
+  } catch (error) {
+    console.error("Error in GET /api/trails/at/:timestamp:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -67,28 +89,24 @@ router.get('/:name/:field', async (req, res) => {
     // Look up cache → on miss, query MongoDB → write the result back to cache → return.
     // If the trail does not exist, return 404 with { error: "Trail not found" }.
     // If the field does not exist on the trail, return 404 with { error: "Field not found" }.
-    console.log("This endpoint is not yet implemented");
-    res.status(501).json({ error: "Not implemented" });
+    const batch = await getLatestBatch(BatchType.TrailBatch);
+    const trail = batch.trails.find(trail => trail.name === req.params.name);
+    const field = req.params.field;
+
+    if (!trail) {
+      return res.status(404).json({ error: "Trail not found" });
+    }
+    if (!(field in trail)) {
+      return res.status(404).json({ error: "Field not found" });
+    }
+
+    res.json({ [field]: trail[field] });
   } catch (error) {
     console.error("Error in GET /api/trails/:name/:field:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// GET /api/trails/at/:timestamp — historical batch (NOT CACHED)
-router.get('/at/:timestamp', async (req, res) => {
-  try {
-    // TODO: return the most recent TrailBatch with timestamp <= :timestamp.
-    // Validate the timestamp format (e.g. 2025-05-01T14:25:00). Return 400 if invalid.
-    // If no batch exists at or before the given timestamp, return 404.
-    // DO NOT cache this endpoint.
-    console.log("This endpoint is not yet implemented");
-    res.status(501).json({ error: "Not implemented" });
-  } catch (error) {
-    console.error("Error in GET /api/trails/at/:timestamp:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
 
 /*
  * TODO: Implement an endpoint to update the status of a specific trail.
@@ -107,5 +125,29 @@ router.get('/at/:timestamp', async (req, res) => {
  *
  * The route path should clearly identify both the resource and what's being changed.
  */
+
+router.patch('/:name/status', async (req, res) => {
+  try {
+    const name = req.params.name;
+    const { status } = req.body;
+    const batch = await getLatestBatch(BatchType.TrailBatch);
+    const trail = batch.trails.find(trail => trail.name === name);
+
+
+    if (!Object.values(TrailStatus).includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+    if (!trail) {
+      return res.status(404).json({ error: "Trail not found" });
+    }
+
+    trail.status = status;
+    res.json(trail);
+  } catch (error) {
+    console.error("Error in PATCH /api/trails/:name/status:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 
 export default router;

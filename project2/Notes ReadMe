@@ -1,0 +1,4 @@
+
+- Task 2A: 
+When implementing the status update endpoints, I used patch as my http method because I'm only updating one field in the resources, if I were to be 
+replacing the entire lift/trail object I would have then used put. 

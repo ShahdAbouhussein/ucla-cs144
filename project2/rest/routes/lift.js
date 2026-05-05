@@ -38,10 +38,31 @@ router.get('/', async (req, res) => {
   try {
     // TODO: fetch the latest LiftBatch.
     // Look up cache → on miss, query MongoDB → write the result back to cache → return.
-    console.log("This endpoint is not yet implemented");
-    res.status(501).json({ error: "Not implemented" });
+    const batch = await getLatestBatch(BatchType.LiftBatch);
+    res.json(batch);
   } catch (error) {
     console.error("Error in GET /api/lifts:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// GET /api/lifts/at/:timestamp — historical batch (NOT CACHED)
+router.get('/at/:timestamp', async (req, res) => {
+  try {
+    // TODO: return the most recent LiftBatch with timestamp <= :timestamp.
+    // Validate the timestamp format (e.g. 2025-05-01T14:25:00). Return 400 if invalid.
+    // If no batch exists at or before the given timestamp, return 404.
+    // DO NOT cache this endpoint.
+    const timestamp = req.params.timestamp;
+    const batch = await getNearestBatch(BatchType.LiftBatch, timestamp);
+
+    if (!batch) {
+      return res.status(404).json({ error: "No batch found" });
+    }
+
+    res.json(batch);
+  } catch (error) {
+    console.error("Error in GET /api/lifts/at/:timestamp:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -52,8 +73,14 @@ router.get('/:name', async (req, res) => {
     // TODO: return the named lift from the latest batch.
     // Look up cache → on miss, query MongoDB → write the result back to cache → return.
     // If the lift does not exist, return 404 with { error: "Lift not found" }.
-    console.log("This endpoint is not yet implemented");
-    res.status(501).json({ error: "Not implemented" });
+    const batch = await getLatestBatch(BatchType.LiftBatch);
+    const lift = batch.lifts.find(lift => lift.name === req.params.name);
+    
+    if (!lift) {
+      return res.status(404).json({ error: "Lift not found" });
+    }
+    
+    res.json(lift);
   } catch (error) {
     console.error("Error in GET /api/lifts/:name:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -67,28 +94,24 @@ router.get('/:name/:field', async (req, res) => {
     // Look up cache → on miss, query MongoDB → write the result back to cache → return.
     // If the lift does not exist, return 404 with { error: "Lift not found" }.
     // If the field does not exist on the lift, return 404 with { error: "Field not found" }.
-    console.log("This endpoint is not yet implemented");
-    res.status(501).json({ error: "Not implemented" });
+    const batch = await getLatestBatch(BatchType.LiftBatch);
+    const lift = batch.lifts.find(lift => lift.name === req.params.name);
+    const field = req.params.field;
+
+    if (!lift) {
+      return res.status(404).json({ error: "Lift not found" });
+    }
+    if (!(field in lift)) {
+      return res.status(404).json({ error: "Field not found" });
+    }
+
+    res.json({ [field]: lift[field] });
   } catch (error) {
     console.error("Error in GET /api/lifts/:name/:field:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// GET /api/lifts/at/:timestamp — historical batch (NOT CACHED)
-router.get('/at/:timestamp', async (req, res) => {
-  try {
-    // TODO: return the most recent LiftBatch with timestamp <= :timestamp.
-    // Validate the timestamp format (e.g. 2025-05-01T14:25:00). Return 400 if invalid.
-    // If no batch exists at or before the given timestamp, return 404.
-    // DO NOT cache this endpoint.
-    console.log("This endpoint is not yet implemented");
-    res.status(501).json({ error: "Not implemented" });
-  } catch (error) {
-    console.error("Error in GET /api/lifts/at/:timestamp:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
 
 /*
  * TODO: Implement an endpoint to update the status of a specific lift.
@@ -107,5 +130,28 @@ router.get('/at/:timestamp', async (req, res) => {
  *
  * The route path should clearly identify both the resource and what's being changed.
  */
+
+router.patch('/:name/status', async (req, res) => {
+  try {
+    const name = req.params.name;
+    const { status } = req.body;
+    const batch = await getLatestBatch(BatchType.LiftBatch);
+    const lift = batch.lifts.find(lift => lift.name === name);
+
+    if (!Object.values(LiftStatus).includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+    if (!lift) {
+      return res.status(404).json({ error: "Lift not found" });
+    }
+
+    lift.status = status;
+    lift.lastUpdated = new Date().toISOString();
+    res.json(lift);
+  } catch (error) {
+    console.error("Error in PATCH /api/lifts/:name/status:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 export default router;
