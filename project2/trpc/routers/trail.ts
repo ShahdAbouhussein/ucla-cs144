@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
 import { t } from '../config.js';
 import { TrailService } from '../services/trailService.js';
 import { TrailStatus } from '../../models/Enum.js';
@@ -17,9 +18,7 @@ export const trailRouter = router({
   // TODO: Implement a procedure that returns the latest trail batch.
   // Should return all trails in the current batch, or [] if none exists.
   getLatest: publicProcedure.query(async () => {
-    // Student implementation here
-    console.log("getLatest procedure not yet implemented");
-    return [];
+    return await TrailService.getLatestTrails();
   }),
 
   // TODO: Implement a procedure that returns a single trail by name.
@@ -28,9 +27,16 @@ export const trailRouter = router({
   getByName: publicProcedure
     .input(z.object({ name: trailNameSchema }))
     .query(async ({ input }) => {
-      // TODO: Implement me!
-      console.log("getByName procedure not yet implemented");
-      return {};
+      const trail = await TrailService.getTrailByName(input.name);
+
+      if (!trail) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Trail not found',
+        });
+      }
+
+      return trail;
     }),
 
   // TODO: Implement a procedure that updates a trail's status in Redis.
@@ -47,8 +53,15 @@ export const trailRouter = router({
       status: trailStatusValidator,
     }))
     .mutation(async ({ input }) => {
-      // TODO: Implement me!
-      console.log("updateStatus procedure not yet implemented");
-      return { success: false, message: "Not implemented" };
+      const result = await TrailService.updateTrailStatus(input.name, input.status);
+
+      if (!result.success) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: result.message,
+        });
+      }
+
+      return result;
     }),
 });

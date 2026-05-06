@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { t } from '../config.js';
 import { LiftService } from '../services/liftService.js';
 import { LiftStatus } from '../../models/Enum.js';
+import { TRPCError } from '@trpc/server';
 
 const router = t.router;
 const publicProcedure = t.procedure;
@@ -17,9 +18,7 @@ export const liftRouter = router({
   // TODO: Implement a procedure that returns the latest lift batch.
   // Should return all lifts in the current batch, or [] if none exists.
   getLatest: publicProcedure.query(async () => {
-    // Student implementation here
-    console.log("getLatest procedure not yet implemented");
-    return [];
+    return await LiftService.getLatestLifts();
   }),
 
   // TODO: Implement a procedure that returns a single lift by name.
@@ -28,9 +27,16 @@ export const liftRouter = router({
   getByName: publicProcedure
     .input(z.object({ name: liftNameSchema }))
     .query(async ({ input }) => {
-      // TODO: Implement me!
-      console.log("getByName procedure not yet implemented");
-      return {};
+      const lift = await LiftService.getLiftByName(input.name);
+
+      if (!lift) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Lift not found',
+        });
+      }
+
+      return lift;
     }),
 
   // TODO: Implement a procedure that updates a lift's status in Redis.
@@ -47,8 +53,15 @@ export const liftRouter = router({
       status: liftStatusValidator,
     }))
     .mutation(async ({ input }) => {
-      // TODO: Implement me!
-      console.log("updateStatus procedure not yet implemented");
-      return { success: false, message: "Not implemented" };
+      const result = await LiftService.updateLiftStatus(input.name, input.status);
+
+      if (!result.success) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: result.message,
+        });
+      }
+
+      return result;
     }),
 });
