@@ -4,7 +4,7 @@ When implementing the status update endpoints, I used patch as my http method be
 replacing the entire lift/trail object I would have then used put. 
 
 - Task 4:
-I verified that the TTL is set to 300 seconds at runtime using redis-cli TTL mammoth:lift:all and  TTL mammoth:trail:all, which returned a value counting down from 300, here is my terminal output:
+I verified that the TTL is set to 300 seconds at runtime using redis-cli TTL mammoth:lift:all and TTL mammoth:trail:all, which returned integer counting down from 300, here is my terminal output:
 
 shahdabouhussein@MacBookPro ucla-cs144 % curl http://localhost:1919/api/lifts
 {"type":"LiftBatch","timestamp":"2025-05-06T13:52:59","lifts":[{"name":"Broadway Express 1","status":"OPEN",...}]}
@@ -15,4 +15,9 @@ shahdabouhussein@MacBookPro ucla-cs144 % curl http://localhost:1919/api/trails
 127.0.0.1:6379> TTL mammoth:trail:all
 (integer) 270
 
- The cache keys follow the format mammoth:lift:all and mammoth:trail:all from the spec. No deviations.
+Moreover, the results also prove the cache keys follow the format mammoth:lift:all and mammoth:trail:all from the spec. No deviations flagged!! yay
+
+- Task 5:
+I chose localStorage because as per the spec, that is the "type that survives a browser restart," if I were to use sessionStorage, that data 
+would clear when the tab/browser session closes
+

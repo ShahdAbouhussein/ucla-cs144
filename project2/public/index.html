@@ -403,6 +403,10 @@ const statusOptions = {
 // Web Storage API functions (Task 5)
 function saveTabSelection(tabName) {
   // TODO: Persist the tab selection and update the URL.
+  localStorage.setItem('activeTab', tabName);
+  const url = new URL(window.location);
+  url.searchParams.set('tab', tabName);
+  window.history.pushState({}, '', url);
 }
 
 function loadTabSelection() {
@@ -413,7 +417,18 @@ function loadTabSelection() {
 
 async function getToken() {
   // TODO: Return a valid bearer token, fetching a new one if needed.
-  return null;
+  const activeTabs = ['trail', 'lift'];
+  const url = new URL(window.location);
+  const urlTab = url.searchParams.get('tab');
+  if (activeTabs.includes(urlTab)) {
+    localStorage.setItem('activeTab', urlTab);
+    return urlTab;
+  }
+  const storageTab = localStorage.getItem('activeTab');
+  if (activeTabs.includes(storageTab)) {
+    return storageTab;
+  }
+  return 'trail';
 }
 
 async function apiFetch(path, init = {}) {
