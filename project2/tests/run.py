@@ -6,11 +6,8 @@ Detects your platform, picks the correct pre-built binary, runs it, and
 writes a copy of the full output to results.txt in this directory.
 
 Usage (from your project directory):
-    python3 /path/to/tests/run.py              # Phase 1 only (no database)
-    DEBUG_DB=true python3 /path/to/tests/run.py  # Phase 1 + Phase 2 (local MongoDB)
-
-Or set PROJECT_DIR explicitly if you are not running from your project folder:
-    PROJECT_DIR=/path/to/your/project python3 /path/to/tests/run.py
+    python3 tests/run.py              # Phase 1 only (no database)
+    DEBUG_DB=true python3 tests/run.py  # Phase 1 + Phase 2 (local MongoDB)
 """
 
 import os
@@ -102,6 +99,12 @@ def _run(binary):
                 _val = _val.strip().strip('"').strip("'")
                 if _key and _key not in os.environ:
                     env[_key] = _val
+
+    # Inject default MongoDB credentials so students don't need a .env file.
+    # These are the standard credentials for the course MongoDB instance.
+    # Values already present in the environment or .env take precedence.
+    env.setdefault("MONGO_USER", "student")
+    env.setdefault("MONGO_PASS", "cs144")
 
     # Inject nvm-managed node/npm/npx onto PATH if they aren't already there.
     # nvm doesn't activate in non-interactive shells, so the binary wouldn't
