@@ -17,8 +17,8 @@ import { bearerAuth } from './auth/bearer.js';
 // DO NOT add a static import here; it will crash with ClientClosedError.
 
 // tRPC
-// import { createExpressMiddleware } from '@trpc/server/adapters/express';
-// import { appRouter } from './trpc/index.js';
+import { createExpressMiddleware } from '@trpc/server/adapters/express';
+import { appRouter, createContext } from './trpc/index.ts';
 
 // Express setup
 const __filename = fileURLToPath(import.meta.url);
@@ -62,9 +62,10 @@ app.use('/api/lifts',  bearerAuth, apiLimiter, liftRoutes);
 app.use('/api/trails', bearerAuth, apiLimiter, trailRoutes);
 
 // tRPC middleware - mounted at /trpc path
-// app.use('/trpc', createExpressMiddleware({
-//  router: appRouter,
-// }));
+app.use('/trpc', createExpressMiddleware({
+  router: appRouter,
+  createContext,
+}));
 
 // Serve static files only if no API route matched
 const projectRoot = path.join(__dirname);

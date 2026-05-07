@@ -66,6 +66,9 @@ router.get('/at/:timestamp', async (req, res) => {
     // If no batch exists at or before the given timestamp, return 404.
     // DO NOT cache this endpoint.
     const timestamp = req.params.timestamp;
+    if (Number.isNaN(Date.parse(timestamp))) {
+      return res.status(400).json({ error: "Invalid timestamp" });
+    }
     const batch = await getNearestBatch(BatchType.LiftBatch, timestamp);
 
     if (!batch) {
@@ -97,7 +100,7 @@ router.get('/:name/:field', async (req, res) => {
       return res.status(404).json({ error: "Field not found" });
     }
 
-    res.json({ [field]: lift[field] });
+    res.json({ name: lift.name, [field]: lift[field] });
   } catch (error) {
     console.error("Error in GET /api/lifts/:name/:field:", error);
     res.status(500).json({ error: "Internal server error" });

@@ -411,13 +411,25 @@ function saveTabSelection(tabName) {
 
 function loadTabSelection() {
   // TODO: Return the active tab, considering URL, storage, and a default.
+  const activeTabs = ['trail', 'lift'];
+  const url = new URL(window.location);
+  const urlTab = url.searchParams.get('tab');
+  if (activeTabs.includes(urlTab)) {
+    localStorage.setItem('activeTab', urlTab);
+    return urlTab;
+  }
+  const storageTab = localStorage.getItem('activeTab');
+  if (activeTabs.includes(storageTab)) {
+    return storageTab;
+  }
+  return 'trail';
 }
 
 // Bearer-token helpers (Task 6A)
 
 async function getToken() {
   // TODO: Return a valid bearer token, fetching a new one if needed.
-  const storedToken = sessionStorage.getItem('bearerToken');
+  const storedToken = sessionStorage.getItem('apiToken');
 
   if (storedToken) {
     return storedToken;
@@ -429,7 +441,7 @@ async function getToken() {
 
   const data = await response.json();
 
-  sessionStorage.setItem('bearerToken', data.token);
+  sessionStorage.setItem('apiToken', data.token);
 
   return data.token;
 }
@@ -439,30 +451,42 @@ async function apiFetch(path, init = {}) {
   const token = await getToken();
   const headers = new Headers(init.headers || {});
   headers.set('Authorization', `Bearer ${token}`);
-  return fetch(path, { ...init, headers });
+  const res = await fetch(path, { ...init, headers });
+  if (res.status === 429) {
+    const body = await res.clone().json().catch(() => ({}));
+    showRateLimitBanner(body.limit || 0, body.retryAfter || 0);
+  }
+  return res;
 }
 
 // Rate-limit banner (Task 6B)
 function showRateLimitBanner(limit, retryAfter) {
   const banner = document.getElementById('rateLimitBanner');
+  if (!banner) return;
+  if (showRateLimitBanner._timer) clearInterval(showRateLimitBanner._timer);
 
-  let secondsLeft = retryAfter;
+  let secondsLeft = parseInt(retryAfter, 10) || 0;
+  banner.classList.add('visible');
 
-  banner.style.display = 'block';
-  banner.textContent = `Rate limit (${limit} req/min) exceeded — retry in ${secondsLeft} seconds.`;
+  const render = () => {
+    banner.textContent = `Rate limit (${limit} req/min) exceeded — retry in ${secondsLeft} seconds.`;
+  };
+  render();
 
-  const timer = setInterval(() => {
-    secondsLeft--;
-
+  showRateLimitBanner._timer = setInterval(() => {
+    secondsLeft -= 1;
     if (secondsLeft <= 0) {
-      clearInterval(timer);
-      banner.style.display = 'none';
+      clearInterval(showRateLimitBanner._timer);
+      showRateLimitBanner._timer = null;
+      banner.classList.remove('visible');
+      banner.textContent = '';
       return;
     }
-
-    banner.textContent = `Rate limit (${limit} req/min) exceeded — retry in ${secondsLeft} seconds.`;
+    render();
   }, 1000);
 }
+
+showRateLimitBanner._timer = null;
 
 // New functions for saving form state
 function saveFormState(entityValue, statusValue) {
@@ -966,6 +990,15 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // TODO: Register a popstate listener for back/forward tab switching.
+  window.addEventListener('popstate', () => {
+    const tab = loadTabSelection();
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.style.display = 'none');
+    document.getElementById(`${tab}s-tab`).style.display = 'flex';
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+    updatePaginationInfo(tab);
+    renderPageWithTransition(tab, currentPage[tab]);
+  });
 
   // Initial data fetch
   fetchAndRender();
