@@ -25,3 +25,4 @@ would clear when the tab/browser session closes
 I used sessionStorage to store the bearer token on the client so the browser can reuse the token between API calls. On the server side, tokens are stored in Redis under auth:token:<token> with a TTL
 
 - Task 6B:
+I tested using the default limit values from the spec, no non-default values were committed.

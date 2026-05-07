@@ -444,7 +444,24 @@ async function apiFetch(path, init = {}) {
 
 // Rate-limit banner (Task 6B)
 function showRateLimitBanner(limit, retryAfter) {
-  // TODO: Show the rate-limit banner with a countdown.
+  const banner = document.getElementById('rateLimitBanner');
+
+  let secondsLeft = retryAfter;
+
+  banner.style.display = 'block';
+  banner.textContent = `Rate limit (${limit} req/min) exceeded — retry in ${secondsLeft} seconds.`;
+
+  const timer = setInterval(() => {
+    secondsLeft--;
+
+    if (secondsLeft <= 0) {
+      clearInterval(timer);
+      banner.style.display = 'none';
+      return;
+    }
+
+    banner.textContent = `Rate limit (${limit} req/min) exceeded — retry in ${secondsLeft} seconds.`;
+  }, 1000);
 }
 
 // New functions for saving form state
