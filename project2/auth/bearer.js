@@ -8,6 +8,8 @@
 //   - If the key is missing or expired, rejects with 401.
 //   - Otherwise, attaches the token to req.token and calls next().
 
+import { getRedisClient } from '../utils/redis.js';
+
 export async function bearerAuth(req, res, next) {
   try {
     // TODO: Implement me!
@@ -18,8 +20,28 @@ export async function bearerAuth(req, res, next) {
     // 4. GET auth:token:<token> from Redis. If missing, return 401 with
     //    { error: "Invalid or expired token" }.
     // 5. Attach req.token = token and call next().
-    console.log("bearerAuth middleware not yet implemented");
-    return res.status(501).json({ error: "Auth not implemented" });
+    const authorization = req.headers?.authorization;
+
+    if (!authorization || typeof authorization !== 'string' || !authorization.startsWith('Bearer ')) {
+      return res.status(401).json({ error: "Missing or malformed Authorization header" });
+    }
+
+    const token = authorization.slice('Bearer '.length).trim();
+
+    if (!token) {
+      return res.status(401).json({ error: "Missing or malformed Authorization header" });
+    }
+
+    const client = await getRedisClient();
+    const key = `auth:token:${token}`;
+    const value = await client.get(key);
+
+    if (!value) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
+
+    req.token = token;
+    return next();
   } catch (error) {
     console.error("Error in bearerAuth:", error);
     return res.status(500).json({ error: "Internal server error" });

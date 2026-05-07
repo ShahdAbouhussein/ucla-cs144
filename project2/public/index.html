@@ -417,23 +417,29 @@ function loadTabSelection() {
 
 async function getToken() {
   // TODO: Return a valid bearer token, fetching a new one if needed.
-  const activeTabs = ['trail', 'lift'];
-  const url = new URL(window.location);
-  const urlTab = url.searchParams.get('tab');
-  if (activeTabs.includes(urlTab)) {
-    localStorage.setItem('activeTab', urlTab);
-    return urlTab;
+  const storedToken = sessionStorage.getItem('bearerToken');
+
+  if (storedToken) {
+    return storedToken;
   }
-  const storageTab = localStorage.getItem('activeTab');
-  if (activeTabs.includes(storageTab)) {
-    return storageTab;
-  }
-  return 'trail';
+
+  const response = await fetch('/api/auth/token', {
+    method: 'POST'
+  });
+
+  const data = await response.json();
+
+  sessionStorage.setItem('bearerToken', data.token);
+
+  return data.token;
 }
 
 async function apiFetch(path, init = {}) {
   // TODO: Wrap fetch with auth and rate-limit handling.
-  return fetch(path, init);
+  const token = await getToken();
+  const headers = new Headers(init.headers || {});
+  headers.set('Authorization', `Bearer ${token}`);
+  return fetch(path, { ...init, headers });
 }
 
 // Rate-limit banner (Task 6B)

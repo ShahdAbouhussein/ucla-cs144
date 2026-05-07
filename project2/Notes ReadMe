@@ -21,3 +21,7 @@ Moreover, the results also prove the cache keys follow the format mammoth:lift:a
 I chose localStorage because as per the spec, that is the "type that survives a browser restart," if I were to use sessionStorage, that data 
 would clear when the tab/browser session closes
 
+- Task 6A:
+I used sessionStorage to store the bearer token on the client so the browser can reuse the token between API calls. On the server side, tokens are stored in Redis under auth:token:<token> with a TTL
+
+- Task 6B:

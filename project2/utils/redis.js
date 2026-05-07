@@ -24,7 +24,7 @@ import { REDIS_PREFIX, redisOptions } from './dbconfig.js';
 
 let redisClient = null;
 
-async function getRedisClient() {
+export async function getRedisClient() {
   if (!redisClient) {
     console.log('Creating new Redis client');
     redisClient = createClient(redisOptions);
