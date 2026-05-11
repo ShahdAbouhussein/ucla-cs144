@@ -1,0 +1,21 @@
+{
+  "name": "office-hours-vue",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "node server.cjs",
+    "clean": "rm -rf node_modules dist *.db"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "sql.js": "^1.14.1",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.3",
+    "vite": "^6.3.5"
+  }
+}
