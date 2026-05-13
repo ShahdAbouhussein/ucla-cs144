@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CS144 PWA Demo</title>
+
+  <!-- PWA meta -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#e94560" />
+  <meta name="description" content="A progressive web app demo for CS144" />
+
+  <!-- iOS support -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PWA Demo" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1><span>CS144</span> PWA Demo</h1>
+    <button id="install-btn">Install App</button>
+  </header>
+
+  <main>
+    <!-- Status Dashboard -->
+    <section class="card">
+      <h2><span class="icon">&#9881;</span> PWA Status</h2>
+      <div class="status-grid">
+        <div class="status-item">
+          <div class="label">Service Worker</div>
+          <div class="value" id="sw-status">Checking...</div>
+        </div>
+        <div class="status-item">
+          <div class="label">Network</div>
+          <div class="value" id="network-status">Checking...</div>
+        </div>
+        <div class="status-item">
+          <div class="label">Notifications</div>
+          <div class="value" id="notif-perm">Checking...</div>
+        </div>
+        <div class="status-item">
+          <div class="label">Display Mode</div>
+          <div class="value" id="display-mode">Checking...</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Notifications -->
+    <section class="card">
+      <h2><span class="icon">&#128276;</span> Notifications</h2>
+      <p style="color:var(--muted);font-size:0.9rem;margin-bottom:0.5rem;">
+        Permission: <span id="notif-perm-badge" class="badge badge-default">Default</span>
+      </p>
+      <div class="actions">
+        <button class="btn" id="btn-request-notif">Request Permission</button>
+        <button class="btn btn-outline" id="btn-send-notif">Send Test Notification</button>
+      </div>
+    </section>
+
+    <!-- Cache Management -->
+    <section class="card">
+      <h2><span class="icon">&#128230;</span> Cache Management</h2>
+      <p style="color:var(--muted);font-size:0.9rem;">
+        The service worker caches all app assets for offline use.
+      </p>
+      <div class="actions">
+        <button class="btn" id="btn-show-cache">Show Cached Assets</button>
+        <button class="btn btn-outline" id="btn-clear-cache">Clear All Caches</button>
+        <button class="btn btn-outline" id="btn-bg-sync">Trigger Background Sync</button>
+      </div>
+    </section>
+
+    <!-- Offline Notes (IndexedDB) -->
+    <section class="card">
+      <h2><span class="icon">&#128221;</span> Offline Notes (IndexedDB)</h2>
+      <form id="note-form" class="note-form">
+        <input type="text" id="note-input" placeholder="Type a note..." autocomplete="off" />
+        <button type="submit" class="btn btn-success">Save</button>
+      </form>
+      <div id="notes-list"></div>
+    </section>
+
+    <!-- Event Log -->
+    <section class="card">
+      <h2><span class="icon">&#128196;</span> Event Log</h2>
+      <div id="log"></div>
+    </section>
+  </main>
+
+  <footer>
+    CS144 &mdash; Web Applications &mdash; PWA Demo
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

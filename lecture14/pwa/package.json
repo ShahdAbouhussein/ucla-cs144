@@ -1,0 +1,9 @@
+{
+  "name": "cs144-pwa-demo",
+  "version": "1.0.0",
+  "description": "A progressive web app demo for CS144",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
