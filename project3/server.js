@@ -1,0 +1,129 @@
+const express = require('express');
+const Database = require('better-sqlite3');
+const path = require('path');
+const fs = require('fs');
+const { execSync } = require('child_process');
+
+const dbPath = path.join(__dirname, 'canvas.db');
+for (const suffix of ['', '-shm', '-wal']) {
+  try { fs.unlinkSync(dbPath + suffix); } catch {}
+}
+execSync('node init_db.js', { cwd: __dirname, stdio: 'inherit' });
+
+const app = express();
+const db = new Database(dbPath, { readonly: false });
+db.pragma('journal_mode = WAL');
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', '*');
+  res.header('Access-Control-Allow-Methods', '*');
+  next();
+});
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Login
+app.post('/api/login', (req, res) => {
+  const { uid, password } = req.body;
+  const student = db.prepare(`SELECT uid, name, role FROM login WHERE uid = '${uid}' AND password = '${password}'`).get();
+  if (!student) {
+    return res.status(401).json({ error: 'Invalid UID or password' });
+  }
+  res.json(student);
+});
+
+// Get enrolled courses
+app.get('/api/students/:uid/courses', (req, res) => {
+  const rows = db.prepare(`
+    SELECT c.id AS course_id, c.code AS course_code, c.title AS course_title, c.instructor
+    FROM enrollment e
+    JOIN course c ON c.id = e.course_id
+    WHERE e.login_uid = ?
+  `).all(req.params.uid);
+  res.json(rows);
+});
+
+// Get course content
+app.get('/api/courses/:courseId/content', (req, res) => {
+  const rows = db.prepare(`
+    SELECT
+      w.id AS week_id,
+      w.title AS week_title,
+      w.sort_order AS week_sort,
+      e.id AS entry_id,
+      e.title AS entry_title,
+      e.type AS entry_type,
+      e.url AS entry_url,
+      e.sort_order AS entry_sort
+    FROM week w
+    JOIN entry e ON e.week_id = w.id
+    WHERE w.course_id = ?
+    ORDER BY w.sort_order, e.sort_order
+  `).all(req.params.courseId);
+  res.json(rows);
+});
+
+// Get courses taught by a professor (matched by login name = course instructor)
+app.get('/api/professors/:uid/courses', (req, res) => {
+  const rows = db.prepare(`
+    SELECT c.id AS course_id, c.code AS course_code, c.title AS course_title, c.instructor
+    FROM course c
+    JOIN login l ON l.name = c.instructor
+    WHERE l.uid = ?
+  `).all(req.params.uid);
+  res.json(rows);
+});
+
+// Get enrolled students for a course
+app.get('/api/courses/:courseId/students', (req, res) => {
+  const rows = db.prepare(`
+    SELECT l.uid, l.name
+    FROM enrollment e
+    JOIN login l ON l.uid = e.login_uid
+    WHERE e.course_id = ?
+    ORDER BY l.name
+  `).all(req.params.courseId);
+  res.json(rows);
+});
+
+// Get grades for a student in a course
+app.get('/api/students/:uid/courses/:courseId/grades', (req, res) => {
+  const rows = db.prepare(`
+    SELECT g.id AS grade_id, a.id AS assignment_id, a.name AS assignment_name, g.score
+    FROM grade g
+    JOIN assignment a ON a.id = g.assignment_id
+    WHERE g.login_uid = ? AND a.course_id = ?
+    ORDER BY a.sort_order
+  `).all(req.params.uid, req.params.courseId);
+  res.json(rows);
+});
+
+// Search course materials
+app.get('/api/search', (req, res) => {
+  const query = req.query.q;
+  try {
+    const output = execSync(`grep -rl "${query}" public/`).toString();
+    const files = output.trim().split('\n').filter(Boolean);
+    res.json({ files });
+  } catch (e) {
+    res.json({ files: [] });
+  }
+});
+
+// Update grades
+app.post('/api/grades', (req, res) => {
+  const { grades } = req.body;
+  const update = db.prepare('UPDATE grade SET score = ? WHERE id = ?');
+  const tx = db.transaction(() => {
+    for (const g of grades) {
+      update.run(g.score, g.grade_id);
+    }
+  });
+  tx();
+  res.json({ success: true });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
