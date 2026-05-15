@@ -6,6 +6,7 @@ async function loadDashboard() {
   const grid = document.getElementById('course-list');
   grid.innerHTML = '';
 
+  // TODO: Data from the server should be safe to render in the page
   courses.forEach((course, i) => {
     const card = document.createElement('div');
     card.className = `course-card course-color-${i % 5}`;
@@ -31,6 +32,7 @@ async function loadProfessorDashboard() {
   const grid = document.getElementById('course-list');
   grid.innerHTML = '';
 
+  // TODO: Data from the server should be safe to render in the page
   courses.forEach((course, i) => {
     const card = document.createElement('div');
     card.className = `course-card course-color-${i % 5}`;

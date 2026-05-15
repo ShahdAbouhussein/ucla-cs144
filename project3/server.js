@@ -16,15 +16,19 @@ db.pragma('journal_mode = WAL');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// TODO: Requests should only be accepted from trusted origins
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', '*');
   res.header('Access-Control-Allow-Methods', '*');
   next();
 });
+// TODO: The browser should not execute any scripts that are not in a source file
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Login
+// TODO: Only a user with the correct password should be able to log in
+// TODO: The server should know who is making each request
 app.post('/api/login', (req, res) => {
   const { uid, password } = req.body;
   const student = db.prepare(`SELECT uid, name, role FROM login WHERE uid = '${uid}' AND password = '${password}'`).get();
@@ -37,6 +41,8 @@ app.post('/api/login', (req, res) => {
 });
 
 // Get enrolled courses
+// TODO: Query the student_courses denormalized table instead
+// TODO: Students should only be able to see their own courses
 app.get('/api/students/:uid/courses', (req, res) => {
   const rows = db.prepare(`
     SELECT c.id AS course_id, c.code AS course_code, c.title AS course_title, c.instructor
@@ -48,6 +54,7 @@ app.get('/api/students/:uid/courses', (req, res) => {
 });
 
 // Get course content
+// TODO: Query the course_content denormalized table instead
 app.get('/api/courses/:courseId/content', (req, res) => {
   const rows = db.prepare(`
     SELECT
@@ -67,18 +74,19 @@ app.get('/api/courses/:courseId/content', (req, res) => {
   res.json(rows);
 });
 
-// Get courses taught by a professor (matched by login name = course instructor)
+// Get courses taught by a professor
+// TODO: Query the professor_courses denormalized table instead
 app.get('/api/professors/:uid/courses', (req, res) => {
   const rows = db.prepare(`
     SELECT c.id AS course_id, c.code AS course_code, c.title AS course_title, c.instructor
     FROM course c
-    JOIN login l ON l.name = c.instructor
-    WHERE l.uid = ?
+    WHERE c.professor_uid = ?
   `).all(req.params.uid);
   res.json(rows);
 });
 
 // Get enrolled students for a course
+// TODO: Query the course_students denormalized table instead
 app.get('/api/courses/:courseId/students', (req, res) => {
   const rows = db.prepare(`
     SELECT l.uid, l.name
@@ -91,6 +99,8 @@ app.get('/api/courses/:courseId/students', (req, res) => {
 });
 
 // Get grades for a student in a course
+// TODO: Query the student_grades denormalized table instead
+// TODO: Students should only be able to see their own grades
 app.get('/api/students/:uid/courses/:courseId/grades', (req, res) => {
   const rows = db.prepare(`
     SELECT g.id AS grade_id, a.id AS assignment_id, a.name AS assignment_name, g.score
@@ -103,6 +113,7 @@ app.get('/api/students/:uid/courses/:courseId/grades', (req, res) => {
 });
 
 // Search course materials
+// TODO: User input should not be able to execute arbitrary commands on the server
 app.get('/api/search', (req, res) => {
   const query = req.query.q;
   try {
@@ -115,6 +126,8 @@ app.get('/api/search', (req, res) => {
 });
 
 // Update grades
+// TODO: Also update the corresponding denormalized table
+// TODO: Only a professor should be able to change grades
 app.post('/api/grades', (req, res) => {
   const { grades } = req.body;
   const update = db.prepare('UPDATE grade SET score = ? WHERE id = ?');
@@ -127,6 +140,7 @@ app.post('/api/grades', (req, res) => {
   res.json({ success: true });
 });
 
+// TODO: The connection between the browser and the server should be encrypted
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
 server.on('error', (err) => {

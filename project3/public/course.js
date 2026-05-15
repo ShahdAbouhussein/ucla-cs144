@@ -86,6 +86,7 @@ async function loadModules(course) {
     section.id = `week-${wk.id}`;
 
     const sorted = wk.entries.sort((a, b) => a.sort - b.sort);
+    // TODO: Data from the server should be safe to render in the page
     let entriesHtml = '';
     for (const entry of sorted) {
       const icon = entry.type === 'slides' ? SLIDES_ICON : RECORDING_ICON;
@@ -98,18 +99,17 @@ async function loadModules(course) {
       `;
     }
 
-    section.innerHTML = `
-      <div class="module-header" onclick="toggleModule(this)">
-        <h3>${wk.title}</h3>
-        <span class="module-toggle">&#9660;</span>
-      </div>
-      <div class="module-body">
-        <div class="lecture-group">
-          ${entriesHtml}
-        </div>
-      </div>
-    `;
+    const header = document.createElement('div');
+    header.className = 'module-header';
+    header.innerHTML = `<h3>${wk.title}</h3><span class="module-toggle">&#9660;</span>`;
+    header.addEventListener('click', () => toggleModule(header));
 
+    const body = document.createElement('div');
+    body.className = 'module-body';
+    body.innerHTML = `<div class="lecture-group">${entriesHtml}</div>`;
+
+    section.appendChild(header);
+    section.appendChild(body);
     container.appendChild(section);
   }
 }

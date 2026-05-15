@@ -22,9 +22,32 @@ Answer each question below. Replace the blank lines with your response.
 
 ## Part 2: Security
 
-For each vulnerability you found, describe in your own words:
-- What the security hole is and what it allows an attacker to do
-- How you fixed it and why your fix works
+For each vulnerability, describe in your own words: (1) what the security hole is and what it allows an attacker to do, and (2) how you fixed it and why your fix works.
+
+**HTTPS:**
+
+
+**SQL Injection:**
+
+
+**Command Injection:**
+
+
+**Cross-Site Scripting (XSS):**
+
+
+**Broken Authentication:**
+
+
+**Broken Access Control:**
+
+
+**Cross-Site Request Forgery (CSRF):**
+
+
+**Dependency Vulnerabilities:**
+
+
 
 
 

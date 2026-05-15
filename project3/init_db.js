@@ -17,7 +17,9 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     code TEXT NOT NULL,
     title TEXT NOT NULL,
-    instructor TEXT NOT NULL
+    instructor TEXT NOT NULL,
+    professor_uid TEXT,
+    FOREIGN KEY (professor_uid) REFERENCES login(uid)
   );
 
   CREATE TABLE enrollment (
@@ -66,18 +68,19 @@ db.exec(`
 `);
 
 const seed = db.transaction(() => {
+  // TODO: If an attacker gained access to the database, they should not be able to read passwords
   const insertLogin = db.prepare('INSERT INTO login (uid, name, password, role) VALUES (?, ?, ?, ?)');
   insertLogin.run('123456789', 'Alice Johnson', 'alice123', 'student');
   insertLogin.run('987654321', 'Bob Smith', 'bob456', 'student');
   insertLogin.run('555123456', 'Charlie Davis', 'charlie789', 'student');
   insertLogin.run('profrosario', 'Rosario', 'bruin', 'professor');
 
-  const insertCourse = db.prepare('INSERT INTO course (code, title, instructor) VALUES (?, ?, ?)');
-  insertCourse.run('COM SCI 35L', 'Software Construction', 'Deuerschmidt');
-  insertCourse.run('COM SCI 144', 'Web Applications', 'Rosario');
-  insertCourse.run('COM SCI 130', 'Software Engineering', 'Deuerschmidt');
-  insertCourse.run('CS 33', 'Introduction to Computer Organization', 'Batista');
-  insertCourse.run('CS 131', 'Programming Languages', 'Eggert');
+  const insertCourse = db.prepare('INSERT INTO course (code, title, instructor, professor_uid) VALUES (?, ?, ?, ?)');
+  insertCourse.run('COM SCI 35L', 'Software Construction', 'Deuerschmidt', null);
+  insertCourse.run('COM SCI 144', 'Web Applications', 'Rosario', 'profrosario');
+  insertCourse.run('COM SCI 130', 'Software Engineering', 'Deuerschmidt', null);
+  insertCourse.run('CS 33', 'Introduction to Computer Organization', 'Batista', null);
+  insertCourse.run('CS 131', 'Programming Languages', 'Eggert', null);
 
   const courses = db.prepare('SELECT id, code FROM course ORDER BY id').all();
 
@@ -134,5 +137,19 @@ const seed = db.transaction(() => {
 });
 
 seed();
+
+// --- Part 1: Denormalized Tables ---
+// TODO: Create the student_courses denormalized table
+
+// TODO: Create the professor_courses denormalized table
+
+// TODO: Create the course_content denormalized table
+
+// TODO: Create the course_students denormalized table
+
+// TODO: Create the student_grades denormalized table
+
+// TODO: Make searching the data in each denormalized table more efficient
+
 console.log('Database initialized successfully.');
 db.close();

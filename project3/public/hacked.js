@@ -33,6 +33,10 @@ function startHackedScreen() {
 
   terminal.appendChild(cursor);
   setTimeout(type, 800);
+
+  document.getElementById('hacked-enter-btn').addEventListener('click', () => {
+    showScreen('login-screen');
+  });
 }
 
 if (window.location.hash === '#home') {

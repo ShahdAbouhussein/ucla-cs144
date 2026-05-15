@@ -45,6 +45,7 @@ async function renderProfessorGrades() {
 
   let totalScore = 0;
 
+  // TODO: Data from the server should be safe to render in the page
   for (const g of grades) {
     const tr = document.createElement('tr');
     tr.innerHTML = `

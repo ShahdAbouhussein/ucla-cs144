@@ -38,7 +38,15 @@ Your task is to create **denormalized tables** — one for each view listed belo
 
 2. Do not modify or delete the existing normalized tables or seed data. The script should continue to insert data into the normalized tables first, then your denormalized tables are derived from them. The denormalized tables are rebuilt automatically each time the server starts.
 
-3. In `server.js`, rewrite each route handler to query your denormalized tables. No query should require a JOIN.
+3. In `server.js`, rewrite each route handler to query your denormalized tables. Each route handler should run a simple `SELECT ... WHERE` against a single denormalized table — no JOINs at query time. (Your `CREATE TABLE ... AS SELECT` statements in `init_db.js` will of course use JOINs to build the denormalized tables.) Each route below must query its corresponding denormalized table:
+
+   | Route | Denormalized Table |
+   |-------|--------------------|
+   | `GET /api/students/:uid/courses` | `student_courses` |
+   | `GET /api/professors/:uid/courses` | `professor_courses` |
+   | `GET /api/courses/:courseId/content` | `course_content` |
+   | `GET /api/courses/:courseId/students` | `course_students` |
+   | `GET /api/students/:uid/courses/:courseId/grades` | `student_grades` |
 
 4. Your schema must scale. In production this database would contain tens of thousands of students and courses. Queries must remain fast regardless of how large the tables grow.
 
@@ -76,9 +84,7 @@ Answer questions 1–4 in [`QUESTIONS.md`](QUESTIONS.md).
 
 ## Part 2: Security
 
-This application has multiple security vulnerabilities. Your task is to find and fix each one. The vulnerabilities are listed below in a suggested order — some fixes depend on earlier ones being in place, so working top to bottom will save you debugging time.
-
-The following categories of vulnerability are present:
+This application has multiple security vulnerabilities. Your task is to find and fix each one. The following categories of vulnerability are present, listed in a suggested order — some fixes depend on earlier ones being in place, so working top to bottom will save you debugging time.
 
 1. **No HTTPS** — The server runs over unencrypted HTTP. Set up HTTPS using a locally-trusted certificate. Use [mkcert](https://github.com/FiloSottile/mkcert) to generate a certificate that your browser will trust without warnings (`mkcert -install` then `mkcert localhost`).
 
@@ -96,13 +102,25 @@ The following categories of vulnerability are present:
 
 8. **Dependency Vulnerabilities** — Run `npm audit` and address any reported issues.
 
+### Think Like an Attacker
+
+To find vulnerabilities, ask yourself these questions about every part of the application. These include but are not limited to:
+
+- For every input in the application, what happens if a user enters something the developer didn't expect?
+- For every API endpoint, what happens if you call it without being logged in, or as a different user?
+- For every piece of data displayed in the browser, where did it come from and could it be malicious?
+- Could someone on the same network as the user intercept or read what is being sent?
+- If a user is logged into CubHub and visits a malicious site in another tab, could that site make requests to CubHub on their behalf?
+- If an attacker gained access to the database, what sensitive data would be exposed in plaintext?
+- Do you trust all the code running in your application, including code you didn't write?
+
 For each vulnerability you find, describe the security hole and how you fixed it in [`QUESTIONS.md`](QUESTIONS.md).
 
 ---
 
 ## Part 3: React
 
-Rewrite the course content page (the weekly modules view with slides and recordings) as React components. The page should display the same data and behave the same as the current implementation, including the sidebar navigation and expandable/collapsible modules.
+Rewrite the course content area as React components. Specifically, replace the module rendering done by `loadModules()` in `course.js` — the weekly module list with expandable/collapsible sections and the slide/recording entry links. Your React component tree should be mounted into the existing `#modules-container` element. The sidebar navigation, grades view, and the rest of the application remain vanilla JavaScript.
 
 JSX is not valid JavaScript — it must be compiled before the browser can run it. Use [esbuild](https://esbuild.github.io/) to compile your JSX and bundle it into a single file that you serve from the Express server:
 
@@ -129,7 +147,7 @@ You are encouraged to use AI tools (e.g. Claude, ChatGPT) to help with this part
 
 ### Requirements
 
-1. Replace fixed pixel units (`px`) with relative units (`em`, `rem`, `vw`) where appropriate. Use `min()`, `max()`, or `clamp()` to set sensible minimum and maximum sizes.
+1. Replace fixed pixel dimensions that prevent the layout from adapting to different screen sizes (e.g. fixed-width containers, fixed-height images) with relative units (`em`, `rem`, `vw`, `%`). Use `min()`, `max()`, or `clamp()` to set sensible minimum and maximum sizes. Pixel values are fine where they do not affect responsiveness, such as borders, small icon sizes, or box shadows.
 
 2. Images (such as the course banner images on the dashboard) must use relative widths (e.g. `%` or `vw`) instead of fixed pixel dimensions, and scale properly across screen sizes.
 

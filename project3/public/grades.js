@@ -4,6 +4,7 @@ async function loadStudentGrades(course) {
 
   const container = document.getElementById('modules-container');
 
+  // TODO: Data from the server should be safe to render in the page
   let rowsHtml = '';
   let totalScore = 0;
 
