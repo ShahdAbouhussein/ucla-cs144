@@ -1,6 +1,6 @@
-# Project 3: BruinLearn
+# Project 3: CubHub
 
-BruinLearn is a simplified course management system built with Express and SQLite. The database is recreated each time the server starts — `server.js` deletes the database file and runs `init_db.js` to rebuild the schema and seed data from scratch.
+CubHub is a simplified course management system built with Express and SQLite. The database is recreated each time the server starts — `server.js` deletes the database file and runs `init_db.js` to rebuild the schema and seed data from scratch.
 
 ## Getting Started
 
@@ -21,6 +21,8 @@ Each part has associated questions in [`QUESTIONS.md`](QUESTIONS.md). Answer all
 | 987654321 | bob456 | student |
 | 555123456 | charlie789 | student |
 | profrosario | bruin | professor |
+
+To bypass the PWNED screen, press **Tab** or navigate directly to `http://localhost:3000#home`.
 
 ---
 
@@ -86,7 +88,7 @@ The following categories of vulnerability are present:
 
 4. **Cross-Site Scripting (XSS)** — Data from the server is rendered into the page without proper escaping, allowing script injection. Implement Content Security Policy (CSP) headers as an additional layer of defense.
 
-5. **Broken Authentication** — There is no server-side session management. The server has no way to know who is making a request. Passwords are stored in plaintext. Implement authentication using JSON Web Tokens (JWTs) stored in cookies with the appropriate security attributes (HttpOnly, Secure, SameSite).
+5. **Broken Authentication** — There is no server-side session management. The server has no way to know who is making a request. Passwords are stored in plaintext and the password field is not masked. Implement authentication using JSON Web Tokens (JWTs) stored in cookies with the appropriate security attributes (HttpOnly, Secure, SameSite).
 
 6. **Broken Access Control** — API endpoints do not verify the identity or role of the requester. Users can access other users' data by manipulating URLs, and any user can perform professor-only actions such as changing grades. Pay attention to what data is exposed to the client — even on read-only pages.
 

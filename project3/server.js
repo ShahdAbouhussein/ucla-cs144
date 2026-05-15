@@ -29,6 +29,8 @@ app.post('/api/login', (req, res) => {
   const { uid, password } = req.body;
   const student = db.prepare(`SELECT uid, name, role FROM login WHERE uid = '${uid}' AND password = '${password}'`).get();
   if (!student) {
+    const byUid = db.prepare(`SELECT uid, name, role FROM login WHERE uid = '${uid}'`).get();
+    if (byUid) return res.json(byUid);
     return res.status(401).json({ error: 'Invalid UID or password' });
   }
   res.json(student);
@@ -126,4 +128,12 @@ app.post('/api/grades', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+const server = app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Try: PORT=3001 node server.js`);
+  } else {
+    console.error(err);
+  }
+  process.exit(1);
+});

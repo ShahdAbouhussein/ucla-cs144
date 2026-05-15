@@ -72,6 +72,25 @@ async function renderProfessorGrades() {
   `;
 
   document.getElementById('prof-save-status').textContent = '';
+
+  tbody.addEventListener('input', () => {
+    const inputs = tbody.querySelectorAll('input[type="number"]');
+    let total = 0;
+    for (const input of inputs) total += parseInt(input.value) || 0;
+    const avg = inputs.length > 0 ? (total / inputs.length).toFixed(1) : '0.0';
+    const letter = letterGrade(parseFloat(avg));
+    document.getElementById('prof-grades-tfoot').innerHTML = `
+      <tr class="final-row">
+        <td><strong>Final Grade</strong></td>
+        <td><strong>${avg}</strong></td>
+        <td><strong>100</strong></td>
+      </tr>
+      <tr class="letter-row">
+        <td><strong>Letter Grade</strong></td>
+        <td colspan="2"><strong class="letter-${letter}">${letter}</strong></td>
+      </tr>
+    `;
+  });
 }
 
 document.getElementById('prev-student').addEventListener('click', async () => {
@@ -110,5 +129,4 @@ document.getElementById('prof-grades-form').addEventListener('submit', async (e)
   });
 
   document.getElementById('prof-save-status').textContent = 'Grades saved!';
-  await renderProfessorGrades();
 });

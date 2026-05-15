@@ -22,9 +22,12 @@ function startHackedScreen() {
     if (i < HACKED_MESSAGE.length) {
       terminal.insertBefore(document.createTextNode(HACKED_MESSAGE[i]), cursor);
       i++;
-      setTimeout(type, 35);
+      setTimeout(type, 7);
     } else {
-      document.getElementById('hacked-enter-btn').classList.remove('hidden');
+      document.getElementById('hacked-enter-btn').style.visibility = 'visible';
+      cursor.style.position = 'absolute';
+      cursor.style.bottom = '0';
+      cursor.style.right = '0';
     }
   }
 
@@ -32,4 +35,15 @@ function startHackedScreen() {
   setTimeout(type, 800);
 }
 
-startHackedScreen();
+if (window.location.hash === '#home') {
+  showScreen('login-screen');
+} else {
+  startHackedScreen();
+  document.addEventListener('keydown', function bypass(e) {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      showScreen('login-screen');
+      document.removeEventListener('keydown', bypass);
+    }
+  });
+}
