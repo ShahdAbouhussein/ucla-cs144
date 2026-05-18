@@ -14,8 +14,7 @@ $(DIST_DIR):
 
 # C target: Compile pi.c to WebAssembly using Emscripten
 c: $(DIST_DIR)
-	emcc $(SRC_C_DIR)/pi.c  -o $(DIST_DIR)/c-pi.js -s EXPORTED_FUNCTIONS="['_approximate_pi']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
-	# emcc $(SRC_C_DIR)/pi.c -O3 -o $(DIST_DIR)/c-pi.js -s SIDE_MODULE=1 -s EXPORTED_FUNCTIONS="['_approximate_pi']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"
+	emcc $(SRC_C_DIR)/pi.c -O3 -o $(DIST_DIR)/c-pi.wasm --no-entry -s EXPORTED_FUNCTIONS="['_approximate_pi']"
 	$(SUCCESS_MSG)
 
 # Rust target: Compile Rust code to WebAssembly using wasm-pack
