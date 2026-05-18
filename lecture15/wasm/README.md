@@ -20,6 +20,8 @@ Build the Monte Carlo calculation of Pi:
 
 Or use `make c`.
 
+You can also build all targets at once with `make all`, and clean build artifacts with `make clean`.
+
 For Rust, you can use the `make rust` target. If you want to explore on your own, follow these steps:
 
 
@@ -135,14 +137,24 @@ pub fn approximate_pi(num_samples: u32) -> f64 {
 
 10. **Serve the project**
 
+You need a server that sets the correct MIME type for `.wasm` files. An Express server is included in `app.js`:
+
+```
+npm install
+node app.js
+```
+
+This serves the project at `http://localhost:1919`.
+
 ## AssemblyScript
 
 1. Setup your project directory:
 
 ```
 project-root/
-├── assembly/
-│   └── index.ts
+├── src/
+│   └── assembly/
+│       └── index.ts
 ├── index.html
 ├── index.js
 ├── asconfig.json
@@ -150,7 +162,7 @@ project-root/
 
 2. Install AssemblyScript
 
-`npm intall --save-dev assemblyscript`
+`npm install --save-dev assemblyscript`
 
 3. Create an `asconfig.json` file.
 
@@ -163,15 +175,17 @@ project-root/
       "shrinkLevel": 1
     }
   },
-  "entries": ["assembly/index.ts"]
+  "entries": ["src/assembly/index.ts"]
 }
 ```
 
-4. Write your code under `assembly/index.ts`
+4. Write your code under `src/assembly/index.ts`
 
 4. Compile the Wasm
 
-`npx asc --config asconfig.json`
+`npx asc src/assembly/index.ts -b dist/as-pi.wasm --runtime stub -O3`
+
+Or use `make as`.
 
 5. Add to a Web Page
 
@@ -198,7 +212,7 @@ const wasm = await WebAssembly.instantiateStreaming(
 );
 
 const computePi = wasm.instance.exports.compute_pi;
-const estimate = computePi(1000000);
+const estimate = computePi(1000000, Date.now());
 
 document.getElementById("result").textContent = estimate.toFixed(6);
 ```
