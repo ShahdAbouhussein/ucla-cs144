@@ -1,26 +1,23 @@
-#include <stdlib.h>
-#include <time.h>
-#include <emscripten.h>
+static unsigned int seed = 42;
 
-// Monte Carlo approximation of Pi
-EMSCRIPTEN_KEEPALIVE
-double approximate_pi(int num_samples) {
-    // Seed the random number generator
-    srand(time(NULL));
-    
+static double random_double(void) {
+    seed = 1664525u * seed + 1013904223u;
+    return seed / 4294967296.0;
+}
+
+__attribute__((visibility("default")))
+double approximate_pi(int num_samples, unsigned int initial_seed) {
+    seed = initial_seed;
+
     int points_in_circle = 0;
-    
+
     for (int i = 0; i < num_samples; i++) {
-        // Generate random point in the square (-1,-1) to (1,1)
-        double x = 2.0 * ((double)rand() / RAND_MAX) - 1.0;
-        double y = 2.0 * ((double)rand() / RAND_MAX) - 1.0;
-        
-        // Check if the point is inside the circle of radius 1
-        if (x*x + y*y <= 1.0) {
+        double x = 2.0 * random_double() - 1.0;
+        double y = 2.0 * random_double() - 1.0;
+
+        if (x*x + y*y <= 1.0)
             points_in_circle++;
-        }
     }
-    
-    // Calculate and return Pi approximation
+
     return 4.0 * (double)points_in_circle / num_samples;
 }

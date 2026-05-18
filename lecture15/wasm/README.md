@@ -4,76 +4,80 @@ Note that these directions are general for your own use. The project structure u
 
 ## C
 
-First install emcc. The version in NPM is quite deprecated.
+1. **Install emcc**
 
-```
-git clone https://github.com/emscripten-core/emsdk.git
-cd emsdk
-./emsdk install latest
-./emsdk activate latest
-source ./emsdk_env.sh
-```
+   The version in NPM is quite deprecated. Install from source:
 
-Build the Monte Carlo calculation of Pi:
+   ```
+   git clone https://github.com/emscripten-core/emsdk.git
+   cd emsdk
+   ./emsdk install latest
+   ./emsdk activate latest
+   source ./emsdk_env.sh
+   ```
 
-`emcc src/c/pi.c -o c-pi.js -s WASM=1 -s EXPORTED_FUNCTIONS="['_approximate_pi']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"`
+2. **Build the Monte Carlo calculation of Pi**
 
-Or use `make c`.
+   `emcc src/c/pi.c -o c-pi.js -s WASM=1 -s EXPORTED_FUNCTIONS="['_approximate_pi']" -s EXPORTED_RUNTIME_METHODS="['ccall', 'cwrap']"`
 
-You can also build all targets at once with `make all`, and clean build artifacts with `make clean`.
+   Or use `make c`.
 
-### Serve the C project
+   You can also build all targets at once with `make all`, and clean build artifacts with `make clean`.
 
-Create a `package.json` and install Express:
+3. **Serve the C project (if on your own)**
 
-```
-npm init -y
-npm install express
-```
+   Create a `package.json` and install Express:
 
-Create `app.js`:
+   ```
+   npm init -y
+   npm install express
+   ```
 
-```js
-const express = require('express');
-const app = express();
+4. **Create `app.js`**
 
-app.use((req, res, next) => {
-  if (req.path.endsWith('.wasm')) res.type('application/wasm');
-  next();
-});
+   ```js
+   const express = require('express');
+   const app = express();
 
-app.use(express.static('./'));
+   app.use((req, res, next) => {
+     if (req.path.endsWith('.wasm')) res.type('application/wasm');
+     next();
+   });
 
-app.listen(1919, () => console.log('http://localhost:1919'));
-```
+   app.use(express.static('./'));
 
-Create `index.html`:
+   app.listen(1919, () => console.log('http://localhost:1919'));
+   ```
 
-```html
-<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>C Wasm Pi</title></head>
-<body>
-  <h1>Monte Carlo π (C WebAssembly)</h1>
-  <button id="calculate">Calculate π</button>
-  <div id="result"></div>
-  <script>
-    (async function () {
-      const imports = { env: { emscripten_date_now: () => Date.now() } };
-      const { instance } = await WebAssembly.instantiateStreaming(
-        fetch('./c-pi.wasm'), imports
-      );
-      document.getElementById('calculate').addEventListener('click', () => {
-        const pi = instance.exports.approximate_pi(1000000);
-        document.getElementById('result').textContent = `π ≈ ${pi}`;
-      });
-    })();
-  </script>
-</body>
-</html>
-```
+5. **Create `index.html`**
 
-Run: `node app.js` and open `http://localhost:1919`.
+   ```html
+   <!DOCTYPE html>
+   <html>
+   <head><meta charset="UTF-8"><title>C Wasm Pi</title></head>
+   <body>
+     <h1>Monte Carlo π (C WebAssembly)</h1>
+     <button id="calculate">Calculate π</button>
+     <div id="result"></div>
+     <script>
+       (async function () {
+         const imports = { env: { emscripten_date_now: () => Date.now() } };
+         const { instance } = await WebAssembly.instantiateStreaming(
+           fetch('./c-pi.wasm'), imports
+         );
+         document.getElementById('calculate').addEventListener('click', () => {
+           const pi = instance.exports.approximate_pi(1000000);
+           document.getElementById('result').textContent = `π ≈ ${pi}`;
+         });
+       })();
+     </script>
+   </body>
+   </html>
+   ```
+
+6. **Run the server**
+
+   `node app.js` and open `http://localhost:1919`.
 
 For Rust, you can use the `make rust` target. If you want to explore on your own, follow these steps:
 
@@ -228,7 +232,7 @@ app.listen(1919, () => console.log('http://localhost:1919'));
 
 Run: `node app.js` and open `http://localhost:1919`.
 
-### Typical Rust Wasm project structure
+### Typical Rust Wasm project structure (this repo does not follow it)
 
 ```
 my-wasm-project/
@@ -248,7 +252,7 @@ my-wasm-project/
 
 ## AssemblyScript
 
-1. Setup your project directory:
+1. Setup your project directory (this repo does not follow this convention):
 
 ```
 project-root/
