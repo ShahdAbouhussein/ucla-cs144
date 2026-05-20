@@ -87,26 +87,41 @@ docker push REGION-docker.pkg.dev/PROJECT_ID/REPO_NAME/IMAGE_NAME:TAG
 
 ## Deploying to Google Kubernetes Engine
 
-1. Follow the directions from Lecture 15 README.
+1. Follow the directions from Lecture 16 README.
 
-2. Create a GKE cluster. You only need to do this once. This can take quite a while.
+2. Install `kubectl` if you haven't already:
+
+```
+gcloud components install kubectl
+```
+
+3. Create a GKE cluster. You only need to do this once. This can take quite a while.
 
 ```
 gcloud container clusters create YOUR_CLUSTER_NAME \
     --zone YOUR_CLUSTER_ZONE \
-    --machine-type e2-small \
-    --num-nodes 1
+    --machine-type e2-micro \
+    --spot \
+    --num-nodes 2 \
+    --max-surge-upgrade 1 \
+    --max-unavailable-upgrade 0
 ```
 
+The region and zone should match your GCE instance.
+
 In my case, I am going to name the cluster `cs144` and use `us-west1-a` as that is where my artifact
-registry is. We will use an `e2-small` since this app does not require many resources. We will also
-start with 1 node (not that this 1 node, not 1 pod).
+registry is. We use `e2-micro` instances since this app does not require many resources (you can always
+upgrade the machine type later). The `--spot` flag uses Spot VMs, which are significantly cheaper than
+regular instances but can be preempted by Google Cloud when capacity is needed. Using 2 nodes provides
+redundancy in case one Spot VM is preempted. The `--max-surge-upgrade 1` and `--max-unavailable-upgrade 0`
+flags ensure that during rolling upgrades, at most 1 extra node is created at a time and no existing
+nodes are taken down until the new one is ready.
 
 `us-west1` is heavily constrained. You can also use `us-central1` or `us-east1`. If you do this, you
 should create your artifact registry in that same region. If you do not, you will be charged for egress
 when pulling the Docker image, but this is a very minimal charge (1 cent per GB).
 
-3. Create and apply both the `deployment.yaml` and `service.yaml` files, similar to Lecture 15.
+4. Create and apply both the `deployment.yaml` and `service.yaml` files, similar to Lecture 15.
 
 ```
 kubectl apply -f deployment.yaml
@@ -117,7 +132,7 @@ If either of these commands fail with a network communication error, you may nee
 
 `gcloud container clusters get-credentials <CLUSTER_NAME> --zone <ZONE> --project <PROJECT_ID>`
 
-4. Create the managed certificate by creating `certificate.yaml` and then apply:
+5. Create the managed certificate by creating `certificate.yaml` and then apply:
 
 `kubectl apply -f certificate.yaml`
 
@@ -157,18 +172,18 @@ Events:
   Normal  Create  55m   managed-certificate-controller  Create SslCertificate mcrt-,,,
 ```
 
-5. Once the certificate is active, create the ingress, which is the gateway into the GKE cluster in `ingress.yaml` and configure with
+6. Once the certificate is active, create the ingress, which is the gateway into the GKE cluster in `ingress.yaml` and configure with
 
 `kubectl apply -f ingress.yaml`
 
 Note that in the template I provide, one line is commented out. You must uncomment this line.
 
-6. Create the front end configuration which forces an upgrade from HTTP to HTTPS. Note that the path section
+7. Create the front end configuration which forces an upgrade from HTTP to HTTPS. Note that the path section
 looks similar to a route. That is not a coincidence.
 
 `kubectl apply -f frontendconfig.yaml`
 
-7. Go to your domain. You should see your site without any security warnings.
+8. Go to your domain. You should see your site without any security warnings.
 
 Note that you may need to change your ingress or frontend configuration if your app breaks. This is usually due to incompatibilities
 between Google Cloud's load balancer and your app's implementation.
