@@ -15,7 +15,6 @@ const app = express();
 //  key: fs.readFileSync('/path/to/privkey.pem'),
 //  cert: fs.readFileSync('/path/to/fullchain.pem')
 // };
-d
 
 
 const httpServer = createServer(app);

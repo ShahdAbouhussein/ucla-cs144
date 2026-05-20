@@ -172,3 +172,27 @@ looks similar to a route. That is not a coincidence.
 
 Note that you may need to change your ingress or frontend configuration if your app breaks. This is usually due to incompatibilities
 between Google Cloud's load balancer and your app's implementation.
+
+## Start with a Clean Environment
+
+If you need to start fresh, you can stop and remove a running container, then delete the image.
+
+1. Stop the running container:
+
+```
+docker stop CONTAINER_ID
+```
+
+2. Remove the container:
+
+```
+docker rm CONTAINER_ID
+```
+
+3. Delete the image:
+
+```
+docker rmi REGION-docker.pkg.dev/PROJECT_ID/REPO_NAME/IMAGE_NAME:TAG
+```
+
+You can find the container ID with `docker ps -a` and the image ID with `docker images`.
