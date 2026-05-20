@@ -1,8 +1,7 @@
-FROM node:lts-alpine
+FROM node:18-alpine
 WORKDIR /app
 COPY package*.json ./
-ENV NODE_ENV=production
-RUN npm install --production
+RUN npm install
 COPY . .
 EXPOSE 1919
 CMD ["node", "app.js"]

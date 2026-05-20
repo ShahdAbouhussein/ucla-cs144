@@ -1,5 +1,90 @@
 # Deploying Chat App to Google Kubernetes Engine with HTTPS
 
+## Installing Docker
+
+If you do not have Docker installed (e.g. on a fresh GCP VM), run the following commands:
+
+```
+sudo apt install docker.io
+mkdir -p ~/.docker/cli-plugins
+```
+
+Install the `buildx` plugin (replace the URL with your CPU architecture and desired version if needed):
+
+```
+curl -L "https://github.com/docker/buildx/releases/download/v0.12.1/buildx-v0.12.1.linux-amd64" -o ~/.docker/cli-plugins/docker-buildx
+chmod +x ~/.docker/cli-plugins/docker-buildx
+```
+
+Add your user to the `docker` group so you can run Docker without `sudo`:
+
+```
+sudo groupadd docker
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+You may also need to change the group ownership of the Docker socket:
+
+```
+sudo chgrp docker /var/run/docker.sock
+```
+
+Then restart your shell (log out and log back in) for the group change to take effect.
+
+Alternatively, you can run the provided `install-docker.sh` script which performs all of the above steps:
+
+```
+chmod +x install-docker.sh
+./install-docker.sh
+```
+
+## Building the Docker Image
+
+To build the Docker image using the standard `docker build` command:
+
+```
+docker build -t REGION-docker.pkg.dev/PROJECT_ID/REPO_NAME/IMAGE_NAME:TAG .
+```
+
+For example:
+
+```
+docker build -t us-west1-docker.pkg.dev/my-project/my-repo/chat-app:latest .
+```
+
+### Building with `buildx`
+
+`buildx` allows you to build multi-platform images (e.g. for both `amd64` and `arm64`). To build and push in one step:
+
+```
+docker buildx build --platform linux/amd64,linux/arm64 \
+    -t REGION-docker.pkg.dev/PROJECT_ID/REPO_NAME/IMAGE_NAME:TAG \
+    --push .
+```
+
+If you only need a single platform (e.g. `amd64` for GKE), you can simplify:
+
+```
+docker buildx build --platform linux/amd64 \
+    -t REGION-docker.pkg.dev/PROJECT_ID/REPO_NAME/IMAGE_NAME:TAG \
+    --push .
+```
+
+Note that `--push` requires you to be authenticated with your artifact registry first:
+
+```
+gcloud auth configure-docker REGION-docker.pkg.dev
+```
+
+### Pushing the Image (without `buildx`)
+
+If you used `docker build` (without `--push`), push the image separately:
+
+```
+docker push REGION-docker.pkg.dev/PROJECT_ID/REPO_NAME/IMAGE_NAME:TAG
+```
+
 ## Deploying to Google Kubernetes Engine
 
 1. Follow the directions from Lecture 15 README.
