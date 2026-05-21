@@ -1,0 +1,21 @@
+{
+  "name": "office-hours-svelte",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "node server.cjs",
+    "clean": "rm -rf node_modules dist *.db"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "sql.js": "^1.14.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "svelte": "^5.28.2",
+    "vite": "^6.3.5"
+  }
+}

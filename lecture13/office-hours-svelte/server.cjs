@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3001;
 const DB_PATH = path.join(__dirname, "office_hours.db");
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "dist")));
 
 let db;
 
