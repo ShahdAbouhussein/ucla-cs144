@@ -167,7 +167,7 @@ db.exec(`
   SELECT 
     login.uid AS professor_uid,
     login.name AS professor_name,
-    course.id AS course.id,
+    course.id AS course_id,
     course.code,
     course.title,
     course.instructor
@@ -231,7 +231,7 @@ db.exec(`
 // TODO: Make searching the data in each denormalized table more efficient
 db.exec(`
   CREATE INDEX student_courses_index
-  ON student_courses(login_uid);
+  ON student_courses(student_uid);
 
   CREATE INDEX professor_courses_index
   ON professor_courses(professor_uid);
