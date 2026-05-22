@@ -140,16 +140,111 @@ seed();
 
 // --- Part 1: Denormalized Tables ---
 // TODO: Create the student_courses denormalized table
+// Given a student's UID, returns the courses they are enrolled in (course ID, code, title, and instructor). 
+// Your denormalized table should map each student directly to their enrolled course information.
+db.exec(` 
+  CREATE TABLE student_courses AS
+  SELECT 
+    login.uid AS student_uid,
+    login.name AS student_name,
+    course.id AS course_id,
+    course.code,
+    course.title,
+    course.instructor
+  FROM login
+  JOIN enrollment
+    ON login.uid = enrollment.login_uid
+  JOIN course 
+    ON enrollment.course_id = course.id
+  WHERE login.role = 'student';
+`)
+  
 
 // TODO: Create the professor_courses denormalized table
+// Given a professor's UID, returns the courses they teach (course ID, code, title, and instructor).
+db.exec(`
+  CREATE TABLE professor_courses AS
+  SELECT 
+    login.uid AS professor_uid,
+    login.name AS professor_name,
+    course.id AS course.id,
+    course.code,
+    course.title,
+    course.instructor
+  FROM login 
+  JOIN course 
+    ON login.uid = course.professor_uid
+  WHERE login.role = 'professor';
+`)
 
 // TODO: Create the course_content denormalized table
+// Given a course ID, returns all weekly modules and their entries. Each row contains the week ID, 
+// week title, week sort order, entry ID, entry title, entry type, entry URL, and entry sort order.
+db.exec(`
+  CREATE TABLE course_content AS
+  SELECT
+    week.course_id,
+    week.id AS week_id,
+    week.title AS week_title,
+    week.sort_order AS week_sort_order,
+    entry.id AS entry_id,
+    entry.title AS entry_title,
+    entry.type AS entry_type,
+    entry.url AS entry_url,
+    entry.sort_order AS entry_sort_order
+  FROM week
+  JOIN entry
+    ON week.id = entry.week_id;
+`);
 
 // TODO: Create the course_students denormalized table
+// Given a course ID, returns the students enrolled in that course (UID and name).
+db.exec(`
+  CREATE TABLE course_students AS
+  SELECT
+    enrollment.course_id,
+    login.uid,
+    login.name
+  FROM enrollment
+  JOIN login
+    ON enrollment.login_uid = login.uid;
+`);
 
 // TODO: Create the student_grades denormalized table
+// Given a student's UID and a course ID, returns their assignment grades. Each row 
+// contains the grade ID, assignment ID, assignment name, and score.
+db.exec(`
+  CREATE TABLE student_grades AS
+  SELECT
+    grade.id AS grade_id,
+    grade.login_uid,
+    assignment.course_id,
+    assignment.id AS assignment_id,
+    assignment.name AS assignment_name,
+    grade.score
+  FROM grade
+  JOIN assignment
+    ON grade.assignment_id = assignment.id;
+`)  
+
 
 // TODO: Make searching the data in each denormalized table more efficient
+db.exec(`
+  CREATE INDEX student_courses_index
+  ON student_courses(login_uid);
+
+  CREATE INDEX professor_courses_index
+  ON professor_courses(professor_uid);
+
+  CREATE INDEX course_content_index
+  ON course_content(course_id);
+
+  CREATE INDEX course_students_index
+  ON course_students(course_id);
+
+  CREATE INDEX student_grades_index
+  ON student_grades(login_uid, course_id);
+`);
 
 console.log('Database initialized successfully.');
 db.close();
