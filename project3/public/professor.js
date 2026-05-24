@@ -2,6 +2,15 @@ let profStudents = [];
 let profCurrentIndex = 0;
 let profCurrentCourse = null;
 
+function escapeHTML(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function loadProfessorGrades(course) {
   profCurrentCourse = course;
   document.getElementById('prof-user-greeting').textContent = `Prof. ${currentStudent.name}`;
@@ -49,8 +58,17 @@ async function renderProfessorGrades() {
   for (const g of grades) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${g.assignment_name}</td>
-      <td><input type="number" name="grade_${g.grade_id}" value="${g.score}" min="0" max="100" class="grade-input"></td>
+      <td>${escapeHTML(g.assignment_name)}</td>
+      <td>
+        <input 
+          type="number"
+          name="grade_${escapeHTML(g.grade_id)}"
+          value="${escapeHTML(g.score)}"
+          min="0"
+          max="100"
+          class="grade-input"
+        >
+      </td>
       <td>100</td>
     `;
     tbody.appendChild(tr);

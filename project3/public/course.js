@@ -80,6 +80,15 @@ async function loadModules(course) {
   const container = document.getElementById('modules-container');
   container.innerHTML = '';
 
+  function escapeHTML(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   for (const wk of weeks) {
     const section = document.createElement('div');
     section.className = 'module-section';
@@ -92,9 +101,9 @@ async function loadModules(course) {
       const icon = entry.type === 'slides' ? SLIDES_ICON : RECORDING_ICON;
       const iconClass = entry.type === 'slides' ? 'icon-slides' : 'icon-recording';
       entriesHtml += `
-        <a href="${entry.url}" class="material-link">
+        <a href="${escapeHTML(entry.url)}" class="material-link">
           <span class="material-icon ${iconClass}">${icon}</span>
-          <span>${entry.title}</span>
+          <span>${escapeHTML(entry.title)}</span>
         </a>
       `;
     }

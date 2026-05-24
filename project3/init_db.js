@@ -66,14 +66,14 @@ db.exec(`
     FOREIGN KEY (assignment_id) REFERENCES assignment(id)
   );
 `);
-
+const bcrypt = require('bcrypt');
 const seed = db.transaction(() => {
   // TODO: If an attacker gained access to the database, they should not be able to read passwords
   const insertLogin = db.prepare('INSERT INTO login (uid, name, password, role) VALUES (?, ?, ?, ?)');
-  insertLogin.run('123456789', 'Alice Johnson', 'alice123', 'student');
-  insertLogin.run('987654321', 'Bob Smith', 'bob456', 'student');
-  insertLogin.run('555123456', 'Charlie Davis', 'charlie789', 'student');
-  insertLogin.run('profrosario', 'Rosario', 'bruin', 'professor');
+  insertLogin.run('123456789', 'Alice Johnson', bcrypt.hashSync('alice123', 10), 'student');
+  insertLogin.run('987654321', 'Bob Smith', bcrypt.hashSync('bob456', 10), 'student');
+  insertLogin.run('555123456', 'Charlie Davis', bcrypt.hashSync('charlie789', 10), 'student');
+  insertLogin.run('profrosario', 'Rosario', bcrypt.hashSync('bruin', 10), 'professor');
 
   const insertCourse = db.prepare('INSERT INTO course (code, title, instructor, professor_uid) VALUES (?, ?, ?, ?)');
   insertCourse.run('COM SCI 35L', 'Software Construction', 'Deuerschmidt', null);

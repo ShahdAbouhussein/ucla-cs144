@@ -1,3 +1,12 @@
+function escapeHTML(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function loadDashboard() {
   document.getElementById('user-greeting').textContent = currentStudent.name;
   const res = await fetch(`/api/students/${currentStudent.uid}/courses`);
@@ -5,16 +14,16 @@ async function loadDashboard() {
 
   const grid = document.getElementById('course-list');
   grid.innerHTML = '';
-
+  
   // TODO: Data from the server should be safe to render in the page
   courses.forEach((course, i) => {
     const card = document.createElement('div');
     card.className = `course-card course-color-${i % 5}`;
     card.innerHTML = `
-      <img src="/images/course-${course.course_id}.jpg" alt="${course.course_code}" class="course-card-img">
+      <img src="/images/course-${escapeHTML(course.course_id)}.jpg" alt="${escapeHTML(course.course_code)}" class="course-card-img">
       <div class="course-card-banner">
-        <div class="card-code">${course.course_code}</div>
-        <div class="card-instructor">${course.instructor}</div>
+        <div class="card-code">${escapeHTML(course.course_code)}</div>
+        <div class="card-instructor">${escapeHTML(course.instructor)}</div>
       </div>
     `;
     card.addEventListener('click', () => loadCourse(course));
@@ -37,10 +46,10 @@ async function loadProfessorDashboard() {
     const card = document.createElement('div');
     card.className = `course-card course-color-${i % 5}`;
     card.innerHTML = `
-      <img src="/images/course-${course.course_id}.jpg" alt="${course.course_code}" class="course-card-img">
+      <img src="/images/course-${escapeHTML(course.course_id)}.jpg" alt="${escapeHTML(course.course_code)}" class="course-card-img">
       <div class="course-card-banner">
-        <div class="card-code">${course.course_code}</div>
-        <div class="card-instructor">${course.instructor}</div>
+        <div class="card-code">${escapeHTML(course.course_code)}</div>
+        <div class="card-instructor">${escapeHTML(course.instructor)}</div>
       </div>
     `;
     card.addEventListener('click', () => loadProfessorGrades(course));

@@ -1,3 +1,12 @@
+function escapeHTML(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function loadStudentGrades(course) {
   const res = await fetch(`/api/students/${currentStudent.uid}/courses/${course.course_id}/grades`);
   const grades = await res.json();
@@ -7,15 +16,15 @@ async function loadStudentGrades(course) {
   // TODO: Data from the server should be safe to render in the page
   let rowsHtml = '';
   let totalScore = 0;
-
+  
   for (const g of grades) {
     rowsHtml += `
-          <tr>
-            <td>${g.assignment_name}</td>
-            <td>${g.score}</td>
-            <td>100</td>
-            <input type="hidden" name="grade_${g.grade_id}" value="${g.score}">
-          </tr>`;
+      <tr>
+            <td>${escapeHTML(g.assignment_name)}</td>
+            <td>${escapeHTML(g.score)}</td>
+        <td>100</td>
+            <input type="hidden" name="grade_${escapeHTML(g.grade_id)}" value="${escapeHTML(g.score)}">
+      </tr>`;
     totalScore += g.score;
   }
 
