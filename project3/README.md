@@ -99,7 +99,7 @@ This application has multiple security vulnerabilities. Your task is to find and
 
 4. **Cross-Site Scripting (XSS)** — Data from the server is rendered into the page without proper escaping, allowing script injection. Implement Content Security Policy (CSP) headers as an additional layer of defense.
 
-5. **Broken Authentication** — There is no server-side session management. The server has no way to know who is making a request. Passwords are stored in plaintext and the password field is not masked. Implement authentication using JSON Web Tokens (JWTs) stored in cookies with the appropriate security attributes (HttpOnly, Secure, SameSite). JWTs must be signed and verified using a server-side secret read from .env as `JWT_SECRET`. Token expiration times must also be configurable through `.env` using `JWT_ACCESS_TOKEN_EXPIRES_IN` and `JWT_REFRESH_TOKEN_EXPIRES_IN`
+5. **Broken Authentication** — There is no server-side session management. The server has no way to know who is making a request. Passwords are stored in plaintext and the password field is not masked. Implement authentication using JSON Web Tokens (JWTs) stored in cookies with the appropriate security attributes (HttpOnly, Secure, SameSite). JWTs must be signed and verified using a server-side secret read from .env as `JWT_SECRET`.
 
 6. **Broken Access Control** — API endpoints do not verify the identity or role of the requester. Users can access other users' data by manipulating URLs, and any user can perform professor-only actions such as changing grades. Pay attention to what data is exposed to the client — even on read-only pages.
 
