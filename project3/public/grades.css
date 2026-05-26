@@ -95,3 +95,31 @@
   color: #2774AE;
   font-weight: 600;
 }
+
+/* Tablet: iPad standard (~768px) */
+@media (max-width: 768px) {
+  .grades-container {
+    max-width: 100%;
+  }
+  .grades-table th,
+  .grades-table td {
+    padding: 10px 14px;
+  }
+}
+
+/* Phone: Google Pixel 10 (~412px) */
+@media (max-width: 480px) {
+  .grades-table th,
+  .grades-table td {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .grades-table thead th {
+    font-size: 11px;
+  }
+  .submit-grades-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 15px;
+  }
+}

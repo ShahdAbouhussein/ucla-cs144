@@ -10,7 +10,7 @@ body.hacked-body {
 .hacked-box {
   border: 3px solid #ff0000;
   padding: 48px 56px;
-  width: 620px;
+  width: min(620px, 90vw);
 }
 
 @keyframes zoom-in {
@@ -72,4 +72,35 @@ body.hacked-body {
 .hacked-btn:hover {
   background: #00ff00;
   color: #000;
+}
+
+/* Tablet: iPad standard (~768px) */
+@media (max-width: 768px) {
+  .hacked-box {
+    padding: 32px 28px;
+  }
+  .hacked-title {
+    font-size: 48px;
+  }
+}
+
+/* Phone: Google Pixel 10 (~412px) */
+@media (max-width: 480px) {
+  .hacked-box {
+    padding: 20px 16px;
+  }
+  .hacked-title {
+    font-size: 32px;
+    margin-bottom: 20px;
+  }
+  .hacked-terminal {
+    font-size: 13px;
+    height: 220px;
+    margin-bottom: 24px;
+  }
+  .hacked-btn {
+    font-size: 14px;
+    padding: 12px 20px;
+    margin-top: 20px;
+  }
 }

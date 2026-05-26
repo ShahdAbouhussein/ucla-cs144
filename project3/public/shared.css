@@ -78,3 +78,37 @@ body {
 .btn-link:hover {
   background: rgba(255,255,255,0.15);
 }
+
+/* Tablet: iPad standard (~768px) */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 16px;
+  }
+  .topbar-right {
+    gap: 10px;
+  }
+  .app-name {
+    font-size: 15px;
+  }
+}
+
+/* Phone: Google Pixel 10 (~412px) */
+@media (max-width: 480px) {
+  .topbar {
+    padding: 0 10px;
+    height: 48px;
+  }
+  .topbar-right {
+    gap: 8px;
+    font-size: 13px;
+  }
+  #user-greeting,
+  #course-user-greeting,
+  #prof-user-greeting {
+    display: none;
+  }
+  .btn-link {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}

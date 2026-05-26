@@ -63,3 +63,38 @@
 .course-color-2 .course-card-banner { background: linear-gradient(135deg, #27ae60, #1e8e4e); }
 .course-color-3 .course-card-banner { background: linear-gradient(135deg, #8e44ad, #6c3483); }
 .course-color-4 .course-card-banner { background: linear-gradient(135deg, #d35400, #a04000); }
+
+/* Tablet: iPad standard (~768px) */
+@media (max-width: 768px) {
+  .dashboard-body {
+    padding: 24px 16px;
+  }
+  .dashboard-body h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+  .course-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+}
+
+/* Phone: Google Pixel 10 (~412px) */
+@media (max-width: 480px) {
+  .dashboard-body {
+    padding: 16px 12px;
+  }
+  .course-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .course-card-img {
+    height: 110px;
+  }
+  .card-code {
+    font-size: 18px;
+  }
+  .card-instructor {
+    font-size: 13px;
+  }
+}

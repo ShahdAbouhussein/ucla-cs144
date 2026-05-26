@@ -79,3 +79,32 @@
   margin-top: 12px;
   text-align: center;
 }
+
+/* Tablet: iPad standard (~768px) */
+@media (max-width: 768px) {
+  .login-container {
+    margin-top: 60px;
+    max-width: 340px;
+  }
+}
+
+/* Phone: Google Pixel 10 (~412px) */
+@media (max-width: 480px) {
+  .login-container {
+    margin: 24px 16px 0;
+    padding: 28px 20px 24px;
+    max-width: 100%;
+    border-radius: 6px;
+  }
+  .login-logo h1 {
+    font-size: 20px;
+  }
+  #login-form input {
+    font-size: 16px; /* prevents iOS auto-zoom on focus */
+    padding: 12px;
+  }
+  #login-form button {
+    padding: 14px;
+    font-size: 16px;
+  }
+}

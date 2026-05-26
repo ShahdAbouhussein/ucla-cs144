@@ -95,6 +95,41 @@ Harder:
 
 **7. For each media query breakpoint, explain why you chose that specific cutoff value and what layout or usability problem it solves. Describe the changes you made at each breakpoint in terms of the user experience (e.g. "the sidebar collapses into a hamburger menu because there isn't enough horizontal space to show it alongside the content"), not just the CSS properties you changed.**
 
+**Breakpoint 1 — 768px (iPad standard portrait)**
+- 768px matches the iPad 9th gen portrait viewport exactly, making it the natural tablet/desktop boundary
+- sidebar narrows from 240px to 200px since it still fits but wastes proportional space, giving the main content more room
+- dashboard card grid shrinks its minimum width so cards don't stretch awkwardly
+- login card's top margin shrinks since tablets have less vertical depth than desktops
+- professor grades table drops its max-width cap so it fills available width instead of sitting in a narrow column with empty space on either side
+
+**Breakpoint 2 — 480px (Google Pixel 10, ~412px CSS width)**
+- 480px safely catches the Pixel 10 (~412px) and similar phones without triggering too early on larger phablets
+- on the course screen, a 240px sidebar would leave only ~172px for content making text unreadable and links impossible to tap, so it collapses into a horizontal nav bar pinned at the top with back, course code, and modules/grades tabs in one row
+- per-module jump links are hidden since desktop-style scrolling isn't useful on mobile
+- dashboard drops to single-column so each course card is full-width and tappable
+- login form extends to fill the screen with side margins instead of floating in a box
+- top bar hides the greeting since phones can't fit a username and logout button at readable size
+- buttons, inputs, and table cells get min 44px touch targets
+- "PWNED!" title shrinks from 64px to 32px so it doesn't overflow the narrowed box
 
 
 **8. If you used AI for this part, what did you prompt it with, and what did you have to fix or adjust by hand?**
+Prompt:
+Please make the app responsive with minimal changes.
+
+Requirements:
+- Replace fixed pixel dimensions that prevent responsiveness with relative units like %, rem, vw, min(), max(), or clamp().
+- Keep pixel values only where they are harmless, like borders, shadows, or tiny icons.
+- Dashboard course images must scale with relative widths and not be fixed-size.
+- Add exactly two meaningful media query breakpoints:
+  1. Tablet breakpoint for iPad standard size around 768px wide.
+  2. Phone breakpoint for Google Pixel 10 size.
+- At each breakpoint, make real usability changes, not just tiny style tweaks. For example: adjust grids, collapse/reflow sidebar/content layout, resize typography, improve tap targets, prevent overflow.
+- All views must remain usable: login, student dashboard, professor dashboard, course modules, grades, and roster.
+- Text should stay readable, buttons tappable, and no content should overflow or get clipped.
+
+Please inspect the existing HTML/CSS/JS structure first, then update only the CSS and minimal JS if truly needed. Do not rewrite unrelated functionality. After changes, summarize:
+1. Which fixed sizes you replaced.
+2. What each breakpoint does.
+
+Upon rechecking the AI work, it had done everything right so I did not go in to fix anything.

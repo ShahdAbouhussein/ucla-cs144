@@ -170,3 +170,85 @@
 .icon-recording {
   color: #27ae60;
 }
+
+/* Tablet: iPad standard (~768px) */
+@media (max-width: 768px) {
+  .course-sidebar {
+    width: 200px;
+  }
+  .course-main {
+    padding: 20px 20px;
+  }
+  .course-main h2 {
+    font-size: 19px;
+  }
+  .module-header h3 {
+    font-size: 14px;
+  }
+}
+
+/* Phone: Google Pixel 10 (~412px) — sidebar collapses into top nav bar */
+@media (max-width: 480px) {
+  .course-layout {
+    flex-direction: column;
+  }
+  .course-sidebar {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding: 8px 12px;
+    gap: 8px;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+    overflow-x: auto;
+  }
+  .course-sidebar h3 {
+    margin-bottom: 0;
+    white-space: nowrap;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  #back-to-dashboard {
+    margin-bottom: 0;
+    padding: 6px 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .sidebar-nav-item {
+    padding: 6px 14px;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+  }
+  .sidebar-nav-item.active {
+    border-left-color: transparent;
+    border-bottom-color: #2774AE;
+  }
+  #sidebar-modules {
+    display: none;
+  }
+  .course-main {
+    padding: 14px 12px;
+  }
+  .lecture-group {
+    padding: 10px 14px;
+  }
+  .lecture-title {
+    font-size: 13px;
+  }
+  .material-link {
+    font-size: 12px;
+    padding: 8px 0;
+  }
+}
