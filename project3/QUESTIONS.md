@@ -132,4 +132,4 @@ Please inspect the existing HTML/CSS/JS structure first, then update only the CS
 1. Which fixed sizes you replaced.
 2. What each breakpoint does.
 
-Upon rechecking the AI work, it had done everything right so I did not go in to fix anything.
+Upon rechecking the AI work, it had done mostly everything right, however, I asked it to help identify the fixed pixel sizes because it had missed some, and tuned those by hand. 
