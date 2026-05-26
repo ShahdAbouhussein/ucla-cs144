@@ -1,10 +1,10 @@
 .login-container {
   max-width: 380px;
-  margin: 120px auto 0;
+  margin: clamp(32px, 12vh, 120px) auto 0;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.12);
-  padding: 40px 36px 36px;
+  padding: 2.5rem 2.25rem 2.25rem;
 }
 
 .login-logo {
@@ -83,7 +83,6 @@
 /* Tablet: iPad standard (~768px) */
 @media (max-width: 768px) {
   .login-container {
-    margin-top: 60px;
     max-width: 340px;
   }
 }

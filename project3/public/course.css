@@ -4,7 +4,7 @@
 }
 
 .course-sidebar {
-  width: 240px;
+  width: clamp(180px, 24%, 240px);
   background: #fff;
   border-right: 1px solid #ddd;
   padding: 20px 0;
@@ -67,7 +67,7 @@
 
 .course-main {
   flex: 1;
-  padding: 28px 36px;
+  padding: 1.75rem 2.25rem;
   overflow-y: auto;
 }
 
@@ -173,11 +173,8 @@
 
 /* Tablet: iPad standard (~768px) */
 @media (max-width: 768px) {
-  .course-sidebar {
-    width: 200px;
-  }
   .course-main {
-    padding: 20px 20px;
+    padding: 1.25rem;
   }
   .course-main h2 {
     font-size: 19px;
@@ -191,6 +188,7 @@
 @media (max-width: 480px) {
   .course-layout {
     flex-direction: column;
+    min-height: calc(100vh - 48px);
   }
   .course-sidebar {
     width: 100%;

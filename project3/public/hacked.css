@@ -35,7 +35,7 @@ body.hacked-body {
   color: #00ff00;
   line-height: 1.7;
   white-space: pre-wrap;
-  height: 300px;
+  height: min(300px, 40vh);
   margin-bottom: 48px;
   position: relative;
 }
