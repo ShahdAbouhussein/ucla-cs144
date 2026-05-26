@@ -110,7 +110,7 @@ async function loadModules(course) {
 
     const header = document.createElement('div');
     header.className = 'module-header';
-    header.innerHTML = `<h3>${wk.title}</h3><span class="module-toggle">&#9660;</span>`;
+    header.innerHTML = `<h3>${escapeHTML(wk.title)}</h3><span class="module-toggle">&#9660;</span>`;
     header.addEventListener('click', () => toggleModule(header));
 
     const body = document.createElement('div');

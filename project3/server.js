@@ -23,13 +23,24 @@ app.use(express.urlencoded({ extended: true }));
 // TODO: Requests should only be accepted from trusted origins
 app.use(cookieParser());
 const JWT_SECRET = 'dev-secret';
-const TRUSTED_ORIGIN = 'https://localhost:3000';
+const TRUSTED_ORIGINS = new Set([
+  'https://localhost:3000',
+  'https://127.0.0.1:3000',
+]);
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', TRUSTED_ORIGIN);
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  res.header('Access-Control-Allow-Methods', 'GET,POST');
+  const origin = req.headers.origin;
+  if (origin && !TRUSTED_ORIGINS.has(origin)) {
+    return res.status(403).json({ error: 'Untrusted origin' });
+  }
+  if (origin && TRUSTED_ORIGINS.has(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  }
   res.header('Content-Security-Policy', "default-src 'self'; script-src 'self'");
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
 
@@ -40,6 +51,24 @@ function requireAuth(req, res, next) {
   } catch {
     res.status(401).json({ error: 'Not authenticated' });
   }
+}
+
+function isStudentEnrolledInCourse(studentUid, courseId) {
+  return !!db
+    .prepare('SELECT 1 FROM student_courses WHERE student_uid = ? AND course_id = ?')
+    .get(studentUid, courseId);
+}
+
+function isProfessorOfCourse(profUid, courseId) {
+  return !!db
+    .prepare('SELECT 1 FROM professor_courses WHERE professor_uid = ? AND course_id = ?')
+    .get(profUid, courseId);
+}
+
+function canAccessCourse(user, courseId) {
+  if (!user) return false;
+  if (user.role === 'professor') return isProfessorOfCourse(user.uid, courseId);
+  return isStudentEnrolledInCourse(user.uid, courseId);
 }
 // TODO: The browser should not execute any scripts that are not in a source file
 app.use(express.static(path.join(__dirname, 'public')));
@@ -79,7 +108,10 @@ app.get('/api/students/:uid/courses', requireAuth, (req, res) => {
 
 // Get course content
 // TODO: Query the course_content denormalized table instead
-app.get('/api/courses/:courseId/content', (req, res) => {
+app.get('/api/courses/:courseId/content', requireAuth, (req, res) => {
+  if (!canAccessCourse(req.user, req.params.courseId)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   const rows = db.prepare(`
     SELECT
       week_id, 
@@ -113,7 +145,10 @@ app.get('/api/professors/:uid/courses', requireAuth, (req, res) => {
 
 // Get enrolled students for a course
 // TODO: Query the course_students denormalized table instead
-app.get('/api/courses/:courseId/students', (req, res) => {
+app.get('/api/courses/:courseId/students', requireAuth, (req, res) => {
+  if (req.user.role !== 'professor' || !isProfessorOfCourse(req.user.uid, req.params.courseId)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
   const rows = db.prepare(`
     SELECT uid, name
     FROM course_students
@@ -126,7 +161,17 @@ app.get('/api/courses/:courseId/students', (req, res) => {
 // Get grades for a student in a course
 // TODO: Query the student_grades denormalized table instead
 // TODO: Students should only be able to see their own grades
-app.get('/api/students/:uid/courses/:courseId/grades', (req, res) => {
+app.get('/api/students/:uid/courses/:courseId/grades', requireAuth, (req, res) => {
+  const { uid, courseId } = req.params;
+  if (req.user.role === 'professor') {
+    if (!isProfessorOfCourse(req.user.uid, courseId)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+  } else {
+    if (req.user.uid !== uid) return res.status(403).json({ error: 'Forbidden' });
+    if (!isStudentEnrolledInCourse(uid, courseId)) return res.status(403).json({ error: 'Forbidden' });
+  }
+
   const rows = db.prepare(`
     SELECT grade_id, assignment_id, assignment_name, score
     FROM student_grades
@@ -155,16 +200,28 @@ app.get('/api/search', requireAuth, (req, res) => {
 app.post('/api/grades', requireAuth, (req, res) => {
   if (req.user.role !== 'professor') return res.status(403).json({ error: 'Forbidden' });
   const { grades } = req.body;
+  const getCourseForGrade = db.prepare('SELECT course_id FROM student_grades WHERE grade_id = ?');
   const updateNormalizedTable = db.prepare('UPDATE grade SET score = ? WHERE id = ?');
   const updateDenormalizedTable = db.prepare('UPDATE student_grades SET score = ? WHERE grade_id = ?');
   const tx = db.transaction(() => {
     for (const g of grades) {
+      const row = getCourseForGrade.get(g.grade_id);
+      if (!row || !isProfessorOfCourse(req.user.uid, row.course_id)) {
+        throw new Error('Forbidden');
+      }
       updateNormalizedTable.run(g.score, g.grade_id);
       updateDenormalizedTable.run(g.score, g.grade_id);
     }
   });
-  tx();
-  res.json({ success: true });
+  try {
+    tx();
+    res.json({ success: true });
+  } catch (e) {
+    if (String(e && e.message) === 'Forbidden') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    throw e;
+  }
 });
 
 // TODO: The connection between the browser and the server should be encrypted
