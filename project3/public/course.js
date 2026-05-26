@@ -77,50 +77,7 @@ async function loadModules(course) {
     sidebarList.appendChild(li);
   });
 
-  const container = document.getElementById('modules-container');
-  container.innerHTML = '';
-
-  function escapeHTML(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  for (const wk of weeks) {
-    const section = document.createElement('div');
-    section.className = 'module-section';
-    section.id = `week-${wk.id}`;
-
-    const sorted = wk.entries.sort((a, b) => a.sort - b.sort);
-    // TODO: Data from the server should be safe to render in the page
-    let entriesHtml = '';
-    for (const entry of sorted) {
-      const icon = entry.type === 'slides' ? SLIDES_ICON : RECORDING_ICON;
-      const iconClass = entry.type === 'slides' ? 'icon-slides' : 'icon-recording';
-      entriesHtml += `
-        <a href="${escapeHTML(entry.url)}" class="material-link">
-          <span class="material-icon ${iconClass}">${icon}</span>
-          <span>${escapeHTML(entry.title)}</span>
-        </a>
-      `;
-    }
-
-    const header = document.createElement('div');
-    header.className = 'module-header';
-    header.innerHTML = `<h3>${escapeHTML(wk.title)}</h3><span class="module-toggle">&#9660;</span>`;
-    header.addEventListener('click', () => toggleModule(header));
-
-    const body = document.createElement('div');
-    body.className = 'module-body';
-    body.innerHTML = `<div class="lecture-group">${entriesHtml}</div>`;
-
-    section.appendChild(header);
-    section.appendChild(body);
-    container.appendChild(section);
-  }
+  window.renderCourseContent(weeks);
 }
 
 function toggleModule(header) {

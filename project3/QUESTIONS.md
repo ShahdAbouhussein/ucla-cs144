@@ -80,12 +80,16 @@ For each vulnerability, describe in your own words: (1) what the security hole i
 ## Part 3: React
 
 **5. Where does the expanded/collapsed state for each module live in your component hierarchy? Why did you put it there?**
-
-
+The state is in each moduleSection component as a local state since these collapsables are connected to their respective module, and so keeping to a local scope so that the parent component doesnt need to manage all toggle states
 
 **6. What did React make easier compared to the vanilla JavaScript implementation? What did it make harder?**
 
+Easier:
+- reusable components,  since pieces could be reused for every week and entry instead of rewriting the same HTML and event logic multiple times 
+- keeping the UI in sync with collapsed state without manually updating DOM elements
 
+Harder:
+- harder setup because JSX needed to be compiled with esbuild, so had to mount the React bundle back into the existing vanilla JavaScript application
 
 ## Part 4: Responsive Design
 
