@@ -15,7 +15,8 @@ let wasmModule = null;
 // that resolves to the initialized module object. Store the result in the
 // wasmModule variable declared above, then draw the fractal.
 async function initWasm() {
-    // YOUR CODE HERE
+    wasmModule = await createMandelbrotModule();
+    render();
 }
 
 // TODO: Render the Mandelbrot set to the canvas using the WASM module.
@@ -46,6 +47,13 @@ function render() {
     const start = performance.now();
 
     // YOUR CODE HERE
+    const buffer = wasmModule._create_buffer(width, height);
+    wasmModule._compute_mandelbrot(width, height, centerX, centerY, zoom, MAX_ITER);
+    const pixels = new Uint8ClampedArray(wasmModule.HEAPU8.buffer, buffer, width * height * 4);
+    const imageData = new ImageData(pixels, width, height);
+    ctx.putImageData(imageData, 0, 0);
+    wasmModule._free_buffer();
+    updateStatus();
 
     const elapsed = performance.now() - start;
     document.getElementById("render-time").textContent =
