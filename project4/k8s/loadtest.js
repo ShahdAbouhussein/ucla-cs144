@@ -6,11 +6,14 @@ import { check } from "k6";
 // k6 uses an "options" export to control how the test runs.
 // Set "vus" (virtual users — simulated concurrent clients) to 20
 // and "duration" to 30 seconds. See the k6 docs for the format.
-export const options = {};
+export const options = {
+    vus: 20,
+    duration: "30s",
+};
 
 // TODO: Replace this with your service's external IP.
 // Run `kubectl get service mandelbrot-service` and copy the EXTERNAL-IP.
-const BASE_URL = "http://<YOUR-EXTERNAL-IP>";
+const BASE_URL = "http://8.229.152.139";
 
 // TODO: Implement the default function that k6 calls repeatedly for each
 // virtual user.
@@ -24,5 +27,10 @@ const BASE_URL = "http://<YOUR-EXTERNAL-IP>";
 // reports pass/fail rates in the k6 summary. Use JSON.parse() on the body
 // to access fields like hostname.
 export default function () {
-    // YOUR CODE HERE
+    const response = http.get(`${BASE_URL}/health`);
+
+    check(response, {
+        "status is 200": (r) => r.status === 200,
+        "contains hostname": (r) => JSON.parse(r.body).hostname !== undefined,
+    });
 }
