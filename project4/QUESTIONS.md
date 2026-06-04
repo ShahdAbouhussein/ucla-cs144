@@ -78,9 +78,9 @@ mandelbrot-deployment-66db4d8654-rjgt8   1/1     Running   0          110m   10.
 
 **Answer:**
 
-The three pods were distributed across two nodes. Pods 9h2cr and rjgt8 were running on node gke-mandelbrot-cluster-default-pool-773c8696-gmk2, while pod jsg7f was running on node gke-mandelbrot-cluster-default-pool-773c8696-t9vf.
+The three pods were distributed across two nodes. Pods 9h2cr and rjgt8 were running on node gke-mandelbrot-cluster-default-pool-773c8696-gmk2, while pod jsg7f was running on node gke-mandelbrot-cluster-default-pool-773c8696-t9vf
 
-Kubernetes can schedule pods across seperate nodes to improve availability and fault tolerance because if all replicas were placed on the same node and that becomes unavailable for whatever reason, the entire application would go down. However, distributing replicas across two nodes guarantees that if one one node goes down, the application can still be available.
+Kubernetes can schedule pods across seperate nodes to improve availability and fault tolerance because if all replicas were placed on the same node and that becomes unavailable for whatever reason, the entire application would go down. However, distributing replicas across two nodes guarantees that if one one node goes down, the application can still be available
 ---
 
 ### Question 5: Load Balancing
